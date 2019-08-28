@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<compendium version="5">
+  <item>
+    <name>Adamantine Chain Mail</name>
+    <type>HA</type>
+    <magic>1</magic>
+    <weight>55</weight>
+    <ac>16</ac>
+    <strength>13</strength>
+    <stealth>YES</stealth>
+    <rarity>Uncommon</rarity>
+    <text>Rarity: Uncommon</text>
+    <text>	This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any critical hit against you becomes a normal hit.</text>
+    <text />
+    <text>Source: Dungeon Master's Guide, page 150</text>
+  </item>
+</compendium>
