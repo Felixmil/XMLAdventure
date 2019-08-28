@@ -14,7 +14,7 @@ root = xmlRoot(doc)                                      # FIND ROOT
 # DEFINE ITEM
 itemNode = newXMLNode("item", parent=root)           # ADD TO ROOT
 newXMLNode('name','Greater Sword of XML', parent=itemNode) #ADD
-newXMLNode('type','XML', parent=itemNode)
+newXMLNode('type','M', parent=itemNode)
 newXMLNode('magic','1', parent=itemNode)
 newXMLNode('weight','0', parent=itemNode)
 newXMLNode('dmg1','40d4', parent=itemNode)
