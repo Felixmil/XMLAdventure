@@ -1,6 +1,7 @@
 library(shiny)
 library(shinyjs)
 library(XML)
+library(stringr)
 
 layout <- "data/layout.xml"
 # layout <- "CompendiumBuildR/data/layout.xml"
@@ -13,15 +14,17 @@ shinyServer(function(input, output) {
     observeEvent(input$reset,  {
         reset('form')
     })
-
+    
     observeEvent(c(input$category,input$type), {
         click('reset')
-
+        
     })
     
     observe({
         fields_r <-  reactive({
-            if (input$category == 'item' & input$type == 'M') {
+            if (input$category == 'NA' | input$type == 'NA') {
+                HTML('Select a category and a type')
+            } else if (input$category == 'item' & input$type == 'M') {
                 reset('form')
                 list(
                     textInput('name','Name:',''),
@@ -79,23 +82,31 @@ shinyServer(function(input, output) {
     # }
     # )
     
+    new <- reactive({
+        doc = xmlTreeParse(layout, useInternalNodes = T) 
+        
+        if(input$category=='NA' | input$type =='NA') {
+            doc
+        } else {
+            # PARSE STRING
+            root = xmlRoot(doc)
+            masterNode = newXMLNode(input$category, parent=root)
+            newXMLNode('name',input$name, parent=masterNode)
+            newXMLNode('type',input$type, parent=masterNode)
+            newXMLNode('magic',input$magic, parent=masterNode)
+            newXMLNode('dmg1',input$dmg1, parent=masterNode)
+            newXMLNode('range', input$range, parent=masterNode)
+            xmlParse(toString.XMLNode(xmlParse(toString.XMLNode(doc))) %>% str_remove_all(pattern = '<.*\\/>\\\n'))
+    }})
     
-    observe({
-        doc = xmlTreeParse(layout, useInternalNodes = T)     # PARSE STRING
-        root = xmlRoot(doc)
-        masterNode = newXMLNode(input$category, parent=root)
-        newXMLNode('name',input$name, parent=masterNode)
-        newXMLNode('type',input$type, parent=masterNode)
-        newXMLNode('magic',input$magic, parent=masterNode)
-        newXMLNode('dmg1',input$dmg1, parent=masterNode)
-        newXMLNode('range', input$range, parent=masterNode)
-        saveXML(doc,file = 'final.xml')
-        output$finalxml <- renderPrint(xmlTreeParse('final.xml', useInternalNodes = T))
-    })
-    
+
+        output$finalxml <- renderPrint(new())
+
     
     observeEvent(input$copyButton, {
-        clipr::write_clip(readr::read_file(toString.XMLNode(xmlTreeParse('final.xml', useInternalNodes = T))))
+        x <- toString.XMLNode(new())
+        clipr::write_clip(x)
     })
+
     
 })

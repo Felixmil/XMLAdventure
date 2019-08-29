@@ -13,22 +13,19 @@ shinyUI(fluidPage(
                fluidRow(
                    column(6,
                           selectInput('category',
-                                      'Select a category of element to add',
-                                      choices = c('Item'='item','More comming...'=NA),
-                                      selected= NA)),
+                                      'Select a category',
+                                      choices = c('Item' = 'item','NA' = NA),
+                                      selected = NA)),
                    column(6, 
                           conditionalPanel(condition = "input.category == 'item'",
                                            selectInput('type', 
-                                                       'Select a type of Item',
-                                                       choices=c('Melee Weapon'= 'M', 
+                                                       'Select a type',
+                                                       choices=c('Melee Weapon' = 'M', 
                                                                  'Ranged Weapon' = 'R',
-                                                                 'Armor' = 'A')
-                                           )
-                          )
-                   )
-               ),
+                                                                 'Armor' = 'A',
+                                                                 'NA' = NA),
+                                                       selected = NA)))),
                hr(),
-
                div(id='form', 
                    uiOutput('fields'))
         ),
