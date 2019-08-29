@@ -1,4 +1,5 @@
 library(shiny)
+library(shinyjs)
 
 
 # Define UI for application that draws a histogram
@@ -9,7 +10,6 @@ shinyUI(fluidPage(
     
     fluidRow(
         column(7,
-               "Select",
                fluidRow(
                    column(6,
                           selectInput('category',
@@ -21,17 +21,20 @@ shinyUI(fluidPage(
                                            selectInput('type', 
                                                        'Select a type of Item',
                                                        choices=c('Melee Weapon'= 'M', 
-                                                                 'Ranged Weapon' = 'R')
+                                                                 'Ranged Weapon' = 'R',
+                                                                 'Armor' = 'A')
                                            )
                           )
                    )
                ),
                hr(),
-               actionButton('del','delete'),
-               div(id='form', uiOutput('fields'))
+
+               div(id='form', 
+                   uiOutput('fields'))
         ),
         column(5,
-               "XML",
+               actionButton('reset','Reset', icon = icon('refresh')),
+               hr(),
                verbatimTextOutput('finalxml'),
                actionButton("copyButton", "Copy!",icon = icon('copy'))
         )

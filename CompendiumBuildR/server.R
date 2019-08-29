@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyjs)
+library(XML)
 
 layout <- "data/layout.xml"
 # layout <- "CompendiumBuildR/data/layout.xml"
@@ -7,37 +8,48 @@ layout <- "data/layout.xml"
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-   
     
     
-    observeEvent(c(input$category,input$type),{
+    observeEvent(input$reset,  {
         reset('form')
     })
-    
-     
-    output$fields <- renderUI({
-        if (input$category == 'item' & input$type == 'M') {
-            list( h4('General'),
-                  textInput('name','Name:',''),
-                  radioButtons('magic',
-                               'Magic Item:',
-                               choices = c('Yes'=1,'No'=0),0),
-                  h4('Damages'),
-                  textInput('dmg1',
-                            'Damage:',placeholder = '2d6+2'),'')
-        } else if (input$category == 'item' & input$type == 'R') {
-            reset('form')
-            list(h4('General'),
-                 textInput('name','Name:'),
-                 radioButtons('magic',
-                              'Magic Item:',
-                              choices = c('Yes'=1,'No'=0), 0),
-                 h4('Damages'),
-                 textInput('dmg1',
-                           'Damage:',placeholder = '2d6+2'),
-                 textInput('range','Range:',placeholder = '20/60'))
-        }
+
+    observeEvent(c(input$category,input$type), {
+        click('reset')
+
     })
+    
+    observe({
+        fields_r <-  reactive({
+            if (input$category == 'item' & input$type == 'M') {
+                reset('form')
+                list(
+                    textInput('name','Name:',''),
+                    radioButtons('magic',
+                                 'Magic Item:',
+                                 choices = c('Yes'=1,'No'=0),0),
+                    textInput('dmg1',
+                              'Damage:',placeholder = '2d6+2'),'')
+            } else if (input$category == 'item' & input$type == 'R') {
+                reset('form')
+                list(
+                    textInput('name','Name:'),
+                    radioButtons('magic',
+                                 'Magic Item:',
+                                 choices = c('Yes'=1,'No'=0), 0),
+                    textInput('dmg1',
+                              'Damage:',placeholder = '2d6+2'),
+                    textInput('range','Range:',placeholder = '20/60'), value='')
+            } else {
+                reset('form')
+            }})
+        fields_d <- debounce(fields_r, 500)
+        output$fields <- renderUI(fields_d())
+    }
+    )
+    
+    
+    
     
     # observe({
     #     insertUI(selector = "#form",multiple = T,
@@ -66,7 +78,7 @@ shinyServer(function(input, output) {
     #              )
     # }
     # )
-
+    
     
     observe({
         doc = xmlTreeParse(layout, useInternalNodes = T)     # PARSE STRING
