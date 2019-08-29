@@ -2,7 +2,8 @@
 
 A Shiny App to build xml compendium elements. The xml Outputs follow the Lion's Den style guide so you can easily import it to the app.
 
-
+## Motivations
+writing xml directly in text edit is hard and error prone, but [GM 5 is so great !](https://donfarland.com/technology/introduction-to-lions-den-game-master-5).
 
 ## Features
 
@@ -12,7 +13,7 @@ Fill in preformated inputs to generate an xml that you can copy/paste into your 
 ### Create
 
 - Choose a a category of element to add (only items for now)
-- Fill the various inputs (at the moment, only items are supported)
+- Fill the various inputs that are generated depending on the category
 
 ![](doc/build.gif)
 
@@ -33,10 +34,10 @@ Change type or category to reset all the inputs or
 This app is based on the [R](https://www.r-project.org) language and its [Shiny package](https://shiny.rstudio.com), developped by [RStudio](https://github.com/rstudio/shiny).
 
 ## TODO
-  - [ ] Build a POC
+  - [x] Build a POC
   - [ ] Get Feedbacks
   - [ ] Publish on shinyapps.io for free and easy access
   - [ ] Support other category of element
+  - [ ] add the possibility to build several element as one output
   - [ ] (maybe) adapt inputs depending on types within a category
 
-## Milestones
