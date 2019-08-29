@@ -8,7 +8,7 @@ Writing xml directly in text edit is hard and error prone, but [GM 5 is so great
 
 ### Features
 
-### General Principle
+#### General Principle
 Fill in preformated inputs to generate an xml that you can copy/paste into your compendium files.
 
 #### Create
