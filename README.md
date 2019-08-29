@@ -26,7 +26,7 @@ Use the buttons to copy the text output. You can choose either the whole structu
 
 #### Reset
 
-Change type or category to reset all the inputs or 
+Change type or category to reset all the inputs or click on the 'reset' button.
 
 ![](doc/reset.gif)
 
