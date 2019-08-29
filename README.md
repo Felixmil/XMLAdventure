@@ -4,7 +4,7 @@
 A Shiny App to build xml compendium elements. The xml Outputs follow the Lion's Den style guide so you can easily import it to the app.
 
 ### Motivations
-writing xml directly in text edit is hard and error prone, but [GM 5 is so great !](https://donfarland.com/technology/introduction-to-lions-den-game-master-5) .
+Writing xml directly in text edit is hard and error prone, but [GM 5 is so great !](https://donfarland.com/technology/introduction-to-lions-den-game-master-5) .
 
 ### Features
 
