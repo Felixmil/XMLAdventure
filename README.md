@@ -36,7 +36,7 @@ This app is based on the [R](https://www.r-project.org) language and its [Shiny 
 
 ### TODO
   - [x] Build a POC
-  - [ ] Get Feedbacks
+  - [x] Get Feedbacks
   - [ ] Publish on shinyapps.io for free and easy access
   - [ ] Support other category of element
   - [ ] add the possibility to build several element as one output
