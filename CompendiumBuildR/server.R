@@ -2,6 +2,7 @@ library(shiny)
 library(shinyjs)
 library(XML)
 library(stringr)
+library(shinyWidgets)
 
 layout <- "data/layout.xml"
 # layout <- "CompendiumBuildR/data/layout.xml"
@@ -28,6 +29,8 @@ skills <- c('Acrobatics (Dex)',
             'Stealth (Dex)',
             'Survival (Wis)')
 
+skills_simple <- str_remove(skills, ' \\(.*\\)')
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
     
@@ -42,9 +45,38 @@ shinyServer(function(input, output) {
     })
     
     observe({
+        subCat_r <- reactive({
+            if (input$category == 'item') {
+                conditionalPanel(condition = "input.category == 'item'",
+                                 selectInput('type', 
+                                             'Select a type',
+                                             choices=c('medium armor' = 'MA',
+                                                       'heavy armor' = 'HA',
+                                                       'shield' = 'S',
+                                                       'melee weapon' = 'R',
+                                                       'ranged weapon' = 'M',
+                                                       'ammunition' = 'A',
+                                                       'rod' = 'RD',
+                                                       'staff' = 'ST',
+                                                       'wand' = 'WD',
+                                                       'ring' = 'RG',
+                                                       'potion' = 'P',
+                                                       'scroll' = 'SC',
+                                                       'wondrous item' = 'W',
+                                                       'adventuring gear' = 'G',
+                                                       'money' = '$',
+                                                       ''),
+                                             selected = ''))
+            } else {NULL}
+        })
+        subCat_d <- debounce(subCat_r, 500)
+        output$subCat <- renderUI(subCat_d())
+    })
+    
+    observe({
         fields_r <-  reactive({
-            if (input$category == 'NA' & input$type == 'NA') {
-                HTML('Select a category and a type')
+            if (input$category == 'NA') {
+                HTML('Select a category')
             } else if (input$category == 'item') {
                 reset('form')
                 list(
@@ -133,58 +165,100 @@ shinyServer(function(input, output) {
                                   '')
                     
                 )
+                
             } else if (input$category == 'monster') { 
                 reset('form')
+                
+                skill_list_1 <- list()
+                for (skill in skills_simple[1:round(length(skills_simple)/2)]) {
+                    skill_i <- fluidRow(column(8, tags$h5(skill)),
+                                          column(4,numericInput(skill,NULL, value=0)))
+                    skill_list_1 <- append(skill_list_1,skill_i$children)
+                }
+                
+                skill_list_2 <- list()
+                for (skill in skills_simple[(round(length(skills_simple)/2)+1):length(skills_simple)]) {
+                    skill_i <- fluidRow(column(8, tags$h5(skill)),
+                                        column(4,numericInput(skill,NULL, value=0)))
+                    skill_list_2 <- append(skill_list_2,skill_i$children)
+                }
+                
+                
                 list(
                     textInput('name',
                               'Name',
                               '',
                               width = '100%'),
-                    fluidRow(column(6,textInput('type',
+                    fluidRow(column(9,textInput('type',
                                                 'Type',
-                                                '')),
-                             column(2,
-                                    selectInput('cr',
-                                                'CR',
-                                                choices = c('','00','0','1/2','1/4','1/8', as.character(1:30)),
-                                                selected = '')),
-                             column(2,
-                                    selectInput('size',
-                                                'Size',
-                                                choices = c('',
-                                                            'tiny' = 'T',
-                                                            'small' = 'S',
-                                                            'medium' = 'M',
-                                                            'large' = 'L',
-                                                            'huge' = 'H',
-                                                            'gargantuan' = 'G'),
-                                                selected = '')),
-                             column(2,textInput('speed',
-                                       'Speed',
-                                       value = NULL))),
+                                                '',width = '100%')),
+                             column(3,textInput('speed',
+                                                'Speed',
+                                                value = NULL))),
+                    
+                           sliderTextInput('cr',
+                                       'Challenge Rating',
+                                       choices = c('NA',
+                                                   '00',
+                                                   '0',
+                                                   '1/2',
+                                                   '1/4',
+                                                   '1/8', 
+                                                   as.character(1:30)),
+                                       selected = 'NA',
+                                       grid = T, 
+                                       hide_min_max = T,
+                                       width = '100%'),
+                    sliderTextInput('size',
+                                       'Size',
+                                       choices = c('NA' = 'NA',
+                                                   'tiny' = 'T',
+                                                   'small' = 'S',
+                                                   'medium' = 'M',
+                                                   'large' = 'L',
+                                                   'huge' = 'H',
+                                                   'gargantuan' = 'G'),
+                                    selected = 'NA',
+                                    grid = T,
+                                    hide_min_max = T,
+                                    width = '100%'),
                     fluidRow(column(3,numericInput('passive','Passive Percept.', value=NULL)
-                                    ),
-                             column(3,numericInput('init',
-                                                   'Initiative bonus',value = '')),
-                             column(3,textInput('ac',
-                                                'AC (armor type)',
-                                                '')),
-                             column(3,textInput('hp',
-                                                'HP (Dice formula)',
-                                                ''))),
+                    ),
+                    column(3,numericInput('init',
+                                          'Initiative bonus',value = '')),
+                    column(3,textInput('ac',
+                                       'AC (armor type)',
+                                       '')),
+                    column(3,textInput('hp',
+                                       'HP (Dice formula)',
+                                       ''))),
                     fluidRow(column(8,
-                        wellPanel(
-                            fluidRow(
-                                column(3,tags$h4('Abilities')), column(6,tags$h4('Score')),column(3, tags$h4('Saving'))
-                                ),
-                            hr(),
-                            fluidRow(column(3, tags$h5('STR')), column(6,numericInput('str',NULL, value=NULL)),column(3, numericInput('str_save',NULL, 0))),
-                            fluidRow(column(3, tags$h5('DEX')), column(6,numericInput('dex',NULL, value=NULL)),column(3, numericInput('dex_save',NULL, 0))),
-                            fluidRow(column(3, tags$h5('CON')), column(6,numericInput('con',NULL, value=NULL)),column(3, numericInput('con_save',NULL, 0))),
-                            fluidRow(column(3, tags$h5('INT')), column(6,numericInput('int',NULL, value=NULL)),column(3, numericInput('int_save',NULL, 0))),
-                            fluidRow(column(3, tags$h5('WIS')), column(6,numericInput('wis',NULL, value=NULL)),column(3, numericInput('wis_save',NULL, 0))),
-                            fluidRow(column(3, tags$h5('CHA')), column(6,numericInput('cha',NULL, value=NULL)),column(3, numericInput('cha_save',NULL, 0)))
-                        )
+                                    wellPanel(
+                                        fluidRow(
+                                            column(3,tags$h4('Abilities')), 
+                                            column(6,tags$h4('Score')),
+                                            column(3, tags$h4('Saving'))
+                                        ),
+                                        hr(),
+                                        fluidRow(column(3, tags$h5('STR')), 
+                                                 column(6,numericInput('str',NULL, value=NULL)),
+                                                 column(3, numericInput('str_save',NULL, 0))),
+                                        fluidRow(column(3, tags$h5('DEX')), 
+                                                 column(6,numericInput('dex',NULL, value=NULL)),
+                                                 column(3, numericInput('dex_save',NULL, 0))),
+                                        fluidRow(column(3, tags$h5('CON')), 
+                                                 column(6,numericInput('con',NULL, value=NULL)),
+                                                 column(3, numericInput('con_save',NULL, 0))),
+                                        fluidRow(column(3, tags$h5('INT')), 
+                                                 column(6,numericInput('int',NULL, value=NULL)),
+                                                 column(3, numericInput('int_save',NULL, 0))),
+                                        fluidRow(column(3, tags$h5('WIS')), 
+                                                 column(6,numericInput('wis',NULL, value=NULL)),
+                                                 column(3, numericInput('wis_save',NULL, 0))),
+                                        fluidRow(column(3, tags$h5('CHA')), 
+                                                 column(6,numericInput('cha',NULL, value=NULL)),
+                                                 column(3, numericInput('cha_save',NULL, 0)))
+                                    )
                     ),
                     column(4,
                            textInput('vulnerable','Dmg Vulnerabilities',value = ''),
@@ -192,8 +266,15 @@ shinyServer(function(input, output) {
                            textInput('immune','Dmg Immunities',value = ''),
                            textInput('conditionImmune','Conditionnal Immunities',value = ''),
                            textInput('senses','Senses',value = ''),
-                           textInput('languages','Languages',value = ''))
-                ))
+                           textInput('languages','Languages',value = '')
+                    )
+                    ),
+                    hr(),
+                    fluidRow(tags$h4('Skills'),
+                             column(6,skill_list_1),
+                             column(6, skill_list_2))
+                    
+                )
             } else {
                 reset('form')
                 HTML('Not implemented (yet!)')
@@ -257,6 +338,14 @@ shinyServer(function(input, output) {
             newXMLNode('dmgType',input$dmgType, parent=masterNode)
             newXMLNode('property',paste(input$property,collapse=','), parent=masterNode)
             newXMLNode('range', input$range, parent=masterNode)
+            newXMLNode('size', input$size, parent=masterNode)
+            skills_v <- c()
+            for (skill in skills_simple) {
+                skills_v <- append(skills_v, paste(skill, input[[skill]]))
+            }
+            skills_v <- paste(skills_v, collapse = ',')
+            skills_v <- skills_v %>% str_remove_all(.,'(,)?[^,]* 0') %>% str_remove(.,'^,')
+            newXMLNode('skill', skills_v, parent=masterNode)
             xmlParse(toString.XMLNode(xmlParse(toString.XMLNode(doc))) %>% 
                          str_remove_all(pattern = '<.*\\/>\\\n') %>%
                          str_remove_all(pattern = '<.*>NA</.*>'))
@@ -285,8 +374,4 @@ shinyServer(function(input, output) {
         } else {
             output$copyButtonElement <- renderUI(HTML(''))}
     })
-    
-    print('test')
-    print('test')
-    
 })
