@@ -36,6 +36,7 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$reset,  {
         reset('form')
+        reset('fields')
         updateSliderTextInput(session, 'cr',selected = 'NA')
         updateSliderTextInput(session, 'size', selected = 'NA')
         rep(
@@ -193,15 +194,15 @@ shinyServer(function(input, output, session) {
                 
                 list(
                     textInput('name',
-                              'Name',
-                              '',
+                              'Name',value = '',
                               width = '100%'),
                     fluidRow(column(9,textInput('type',
                                                 'Type',
-                                                '',width = '100%')),
+                                                value = '',
+                                                width = '100%')),
                              column(3,textInput('speed',
                                                 'Speed',
-                                                value = NULL))),
+                                                value = ''))),
                     
                     sliderTextInput('cr',
                                     'Challenge Rating',
@@ -414,6 +415,7 @@ shinyServer(function(input, output, session) {
                 
                 
                 # Add skills
+                # TODO Add + symbol before modifier
                 skills_v <- c()
                 for (skill in skills_simple) {
                     skills_v <- append(skills_v, paste(skill, input[[skill]]))
@@ -424,8 +426,8 @@ shinyServer(function(input, output, session) {
                 
                 # Add Traits & Actions
                 if (length(inserted > 0)) {
-                    input$insertBtn
-                    input$removeBtn
+                    pleasreact <- input$insertBtn
+                    pleasreact <- input$removeBtn
                     for (i in 1:length(inserted)) {
                         new_parent = newXMLNode(input[[paste0(inserted[i],'_type')]],'', parent = masterNode)
                         newXMLNode('name',input[[paste0(inserted[i],'_name')]], parent = new_parent)
