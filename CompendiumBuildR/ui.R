@@ -15,7 +15,9 @@ shinyUI(fluidPage(
                                       'Select a category',
                                       choices = c('Item' = 'item','Monster'='monster',''),
                                       selected = '')),
-                   column(6, div(id='form', uiOutput('subCat'))
+                   column(6, 
+                          div(id='form', 
+                                 uiOutput('subCat'))
                    )),
                hr(),
                div(id='form', 

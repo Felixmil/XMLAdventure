@@ -31,17 +31,24 @@ skills <- c('Acrobatics (Dex)',
 
 skills_simple <- str_remove(skills, ' \\(.*\\)')
 
-# Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
     
     
     observeEvent(input$reset,  {
         reset('form')
+        updateSliderTextInput(session, 'cr',selected = 'NA')
+        updateSliderTextInput(session, 'size', selected = 'NA')
+        rep(
+            {removeUI(
+                ## pass in appropriate div id
+                selector = paste0('#', inserted[length(inserted)])
+            )
+            inserted <<- inserted[-length(inserted)]}, length(inserted))
     })
     
-    observeEvent(c(input$category,input$type), {
+    
+    observeEvent(c(input$category), {
         click('reset')
-        
     })
     
     observe({
@@ -172,7 +179,7 @@ shinyServer(function(input, output) {
                 skill_list_1 <- list()
                 for (skill in skills_simple[1:round(length(skills_simple)/2)]) {
                     skill_i <- fluidRow(column(8, tags$h5(skill)),
-                                          column(4,numericInput(skill,NULL, value=0)))
+                                        column(4,numericInput(skill,NULL, value=0)))
                     skill_list_1 <- append(skill_list_1,skill_i$children)
                 }
                 
@@ -196,28 +203,28 @@ shinyServer(function(input, output) {
                                                 'Speed',
                                                 value = NULL))),
                     
-                           sliderTextInput('cr',
-                                       'Challenge Rating',
-                                       choices = c('NA',
-                                                   '00',
-                                                   '0',
-                                                   '1/2',
-                                                   '1/4',
-                                                   '1/8', 
-                                                   as.character(1:30)),
-                                       selected = 'NA',
-                                       grid = T, 
-                                       hide_min_max = T,
-                                       width = '100%'),
+                    sliderTextInput('cr',
+                                    'Challenge Rating',
+                                    choices = c('NA',
+                                                '00',
+                                                '0',
+                                                '1/2',
+                                                '1/4',
+                                                '1/8', 
+                                                as.character(1:30)),
+                                    selected = 'NA',
+                                    grid = T, 
+                                    hide_min_max = T,
+                                    width = '100%'),
                     sliderTextInput('size',
-                                       'Size',
-                                       choices = c('NA' = 'NA',
-                                                   'tiny' = 'T',
-                                                   'small' = 'S',
-                                                   'medium' = 'M',
-                                                   'large' = 'L',
-                                                   'huge' = 'H',
-                                                   'gargantuan' = 'G'),
+                                    'Size',
+                                    choices = c('NA' = 'NA',
+                                                'tiny' = 'T',
+                                                'small' = 'S',
+                                                'medium' = 'M',
+                                                'large' = 'L',
+                                                'huge' = 'H',
+                                                'gargantuan' = 'G'),
                                     selected = 'NA',
                                     grid = T,
                                     hide_min_max = T,
@@ -272,7 +279,13 @@ shinyServer(function(input, output) {
                     hr(),
                     fluidRow(tags$h4('Skills'),
                              column(6,skill_list_1),
-                             column(6, skill_list_2))
+                             column(6, skill_list_2)),
+                    hr(),
+                    fluidRow(
+                        fluidRow(column(6,tags$h4('Traits & Actions')), column(3, actionButton('insertBtn', '+')),column(3, actionButton('removeBtn', '-'))),
+                        fluidRow(column(2,tags$h4('Type')),column(2,tags$h4('Name')),column(2,tags$h4('Attack')), column(6,tags$h4('Description'))),
+                        tags$div(id = 'traitsActions')
+                    )
                     
                 )
             } else {
@@ -284,7 +297,33 @@ shinyServer(function(input, output) {
     }
     )
     
+    inserted <- c()
     
+    observeEvent(input$insertBtn, {
+        btn <- input$insertBtn
+        id <- paste0('text',btn)
+        insertUI(
+            selector = '#traitsActions',
+            ## wrap element in a div with id for ease of removal
+            ui = tags$div(
+                fluidRow(
+                    column(2,selectInput(paste0(id,'_type'),'', choices = c('trait', 'action','reaction','legendary'))),
+                    column(2, textInput(paste0(id,'_name'),'')),
+                    column(2, textInput(paste0(id,'_attack'),'')),
+                    column(6, textAreaInput(paste0(id,'_desc'),label = ''))),
+                id = id
+            )
+        )
+        inserted <<- c(id, inserted)
+    })
+    
+    observeEvent(input$removeBtn, {
+        removeUI(
+            ## pass in appropriate div id
+            selector = paste0('#', inserted[length(inserted)])
+        )
+        inserted <<- inserted[-length(inserted)]
+    })
     
     
     # observe({
@@ -325,27 +364,55 @@ shinyServer(function(input, output) {
             root = xmlRoot(doc)
             masterNode = newXMLNode(input$category, parent=root)
             newXMLNode('name',input$name, parent=masterNode)
-            newXMLNode('type',input$type, parent=masterNode)
-            newXMLNode('detail',input$detail, parent=masterNode)
-            newXMLNode('magic',input$magic, parent=masterNode)
-            newXMLNode('weight',input$weight, parent=masterNode)
-            newXMLNode('text',input$text, parent=masterNode)
-            newXMLNode('ac',input$ac, parent=masterNode)
-            newXMLNode('strength',input$strength, parent=masterNode)
-            newXMLNode('stealth',input$stealth, parent=masterNode)
-            newXMLNode('dmg1',input$dmg1, parent=masterNode)
-            newXMLNode('dmg2',input$dmg2, parent=masterNode)
-            newXMLNode('dmgType',input$dmgType, parent=masterNode)
-            newXMLNode('property',paste(input$property,collapse=','), parent=masterNode)
-            newXMLNode('range', input$range, parent=masterNode)
-            newXMLNode('size', input$size, parent=masterNode)
-            skills_v <- c()
-            for (skill in skills_simple) {
-                skills_v <- append(skills_v, paste(skill, input[[skill]]))
+            if (input$category == 'item') {
+                newXMLNode('type',input$type, parent=masterNode)
+                newXMLNode('detail',input$detail, parent=masterNode)
+                newXMLNode('magic',input$magic, parent=masterNode)
+                newXMLNode('weight',input$weight, parent=masterNode)
+                newXMLNode('text',input$text, parent=masterNode)
+                newXMLNode('ac',input$ac, parent=masterNode)
+                newXMLNode('strength',input$strength, parent=masterNode)
+                newXMLNode('stealth',input$stealth, parent=masterNode)
+                newXMLNode('dmg1',input$dmg1, parent=masterNode)
+                newXMLNode('dmg2',input$dmg2, parent=masterNode)
+                newXMLNode('dmgType',input$dmgType, parent=masterNode)
+                newXMLNode('property',paste(input$property,collapse=','), parent=masterNode)
+                newXMLNode('range', input$range, parent=masterNode)
+            } else if (input$category == 'monster') {
+                
+                newXMLNode('size', input$size, parent=masterNode)
+                
+                # Add skills
+                skills_v <- c()
+                for (skill in skills_simple) {
+                    skills_v <- append(skills_v, paste(skill, input[[skill]]))
+                }
+                skills_v <- paste(skills_v, collapse = ',')
+                skills_v <- skills_v %>% str_remove_all(.,'(,)?[^,]* 0') %>% str_remove(.,'^,')
+                newXMLNode('skill', skills_v, parent=masterNode)
+                
+                # Add Traits & Actions
+                if (length(inserted > 0)) {
+                    input$insertBtn
+                    input$removeBtn
+                    for (i in 1:length(inserted)) {
+                        new_parent = newXMLNode(input[[paste0(inserted[i],'_type')]],'', parent = masterNode)
+                        newXMLNode('name',input[[paste0(inserted[i],'_name')]], parent = new_parent)
+                        newXMLNode('text',input[[paste0(inserted[i],'_desc')]], parent = new_parent)  
+                        newXMLNode('attack',input[[paste0(inserted[i],'_attack')]], parent = new_parent)  
+                        
+                        
+                    }
+                    
+                    
+                }
             }
-            skills_v <- paste(skills_v, collapse = ',')
-            skills_v <- skills_v %>% str_remove_all(.,'(,)?[^,]* 0') %>% str_remove(.,'^,')
-            newXMLNode('skill', skills_v, parent=masterNode)
+            
+            
+            
+            
+            
+            # Clean output XML
             xmlParse(toString.XMLNode(xmlParse(toString.XMLNode(doc))) %>% 
                          str_remove_all(pattern = '<.*\\/>\\\n') %>%
                          str_remove_all(pattern = '<.*>NA</.*>'))
