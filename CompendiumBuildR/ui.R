@@ -8,12 +8,12 @@ shinyUI(fluidPage(
     # Application title
     titlePanel("CompendiumBuildR"),
     fluidRow(
-        column(7,
+        column(8,
                fluidRow(
                    column(6,
                           selectInput('category',
                                       'Select a category',
-                                      choices = c('Item' = 'item',''),
+                                      choices = c('Item' = 'item','Monster'='monster',''),
                                       selected = '')),
                    column(6, 
                           conditionalPanel(condition = "input.category == 'item'",
@@ -40,7 +40,7 @@ shinyUI(fluidPage(
                div(id='form', 
                    uiOutput('fields'))
         ),
-        column(5,
+        column(4,
                actionButton('reset','Reset', icon = icon('refresh')),
                hr(),
                verbatimTextOutput('finalxml'),
