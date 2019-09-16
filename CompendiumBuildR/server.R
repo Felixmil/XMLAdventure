@@ -381,6 +381,37 @@ shinyServer(function(input, output, session) {
             } else if (input$category == 'monster') {
                 
                 newXMLNode('size', input$size, parent=masterNode)
+                newXMLNode('type', input$type, parent=masterNode)
+                newXMLNode('speed', input$speed, parent=masterNode)
+                newXMLNode('ac', input$ac, parent=masterNode)
+                newXMLNode('cr', input$cr, parent=masterNode)
+                newXMLNode('str', input$str, parent=masterNode)
+                newXMLNode('dex', input$dex, parent=masterNode)
+                newXMLNode('con', input$con, parent=masterNode)
+                newXMLNode('wis', input$wis, parent=masterNode)
+                newXMLNode('int', input$int, parent=masterNode)
+                newXMLNode('cha', input$cha, parent=masterNode)
+                newXMLNode('passive', input$passive, parent=masterNode)
+                newXMLNode('init', input$init, parent=masterNode)
+                newXMLNode('hp', input$hp, parent=masterNode)
+                newXMLNode('vulnerable', input$vulnerable, parent=masterNode)
+                newXMLNode('resist', input$resist, parent=masterNode)
+                newXMLNode('immune', input$immune, parent=masterNode)
+                newXMLNode('conitionImmune', input$conditionImmune, parent=masterNode)
+                newXMLNode('senses', input$senses, parent=masterNode)
+                newXMLNode('languages', input$languages, parent=masterNode)
+                newXMLNode('size', input$size, parent=masterNode)
+                
+                # Add saves 
+                #TODO Better format of saving modifiers
+                newXMLNode('save', paste0('Srength +',input$str_save), parent=masterNode)
+                newXMLNode('save', paste0('Dexterity +',input$dex_save), parent=masterNode)
+                newXMLNode('save', paste0('Constitution +',input$con_save), parent=masterNode) 
+                newXMLNode('save', paste0('Wisdom +',input$wis_save), parent=masterNode)
+                newXMLNode('save', paste0('Intelligence +',input$int_save), parent=masterNode)
+                newXMLNode('save', paste0('Charism +',input$cha_save), parent=masterNode)
+                
+                
                 
                 # Add skills
                 skills_v <- c()
@@ -410,12 +441,12 @@ shinyServer(function(input, output, session) {
             
             
             
-            
-            
             # Clean output XML
             xmlParse(toString.XMLNode(xmlParse(toString.XMLNode(doc))) %>% 
                          str_remove_all(pattern = '<.*\\/>\\\n') %>%
-                         str_remove_all(pattern = '<.*>NA</.*>'))
+                         str_remove_all(pattern = '<.*>NA</.*>') %>%
+            str_remove_all(pattern = '<.*>.* \\+0</.*>') %>%
+                str_remove_all(pattern= '[:blank:]{5,}'))
         }})
     
     
