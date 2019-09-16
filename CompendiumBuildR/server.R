@@ -83,7 +83,7 @@ shinyServer(function(input, output, session) {
     
     observe({
         fields_r <-  reactive({
-            if (input$category == 'NA') {
+            if (input$category == '') {
                 HTML('Select a category')
             } else if (input$category == 'item') {
                 reset('form')
@@ -358,7 +358,7 @@ shinyServer(function(input, output, session) {
     new <- reactive({
         doc = xmlTreeParse(layout, useInternalNodes = T) 
         
-        if(input$category=='NA') {
+        if(input$category=='') {
             doc
         } else {
             # PARSE STRING
