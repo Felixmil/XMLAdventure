@@ -27,8 +27,9 @@ shinyUI(fluidPage(theme = shinytheme("superhero"),
         ),
         column(4,
                fluidRow(
-                   column(4,actionButton('reset','Reset', icon = icon('refresh'))),
-                   column(8, column(6,uiOutput('copyButtonElement')),align='center')),
+                   column(6,actionButton('reset','Reset', icon = icon('refresh'))),
+                   column(6, uiOutput('copyButtonElement')),
+                   align='center'),
                hr(),
                verbatimTextOutput('finalxml'),
                textOutput('properties')
