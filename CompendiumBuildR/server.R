@@ -3,6 +3,7 @@ library(shinyjs)
 library(XML)
 library(stringr)
 library(shinyWidgets)
+library(clipr)
 
 layout <- "data/layout.xml"
 # layout <- "CompendiumBuildR/data/layout.xml"
@@ -44,7 +45,7 @@ shinyServer(function(input, output, session) {
                 ## pass in appropriate div id
                 selector = paste0('#', inserted[length(inserted)])
             )
-            inserted <<- inserted[-length(inserted)]}, length(inserted))
+                inserted <<- inserted[-length(inserted)]}, length(inserted))
     })
     
     
@@ -356,14 +357,12 @@ shinyServer(function(input, output, session) {
     # )
     
     new <- reactive({
-        doc = xmlTreeParse(layout, useInternalNodes = T) 
+        # doc = xmlTreeParse(layout, useInternalNodes = T) 
         
-        if(input$category=='') {
-            doc
-        } else {
+        if(input$category !='') {
             # PARSE STRING
-            root = xmlRoot(doc)
-            masterNode = newXMLNode(input$category, parent=root)
+            # root = xmlRoot(doc)
+            masterNode = newXMLNode(input$category)
             newXMLNode('name',input$name, parent=masterNode)
             if (input$category == 'item') {
                 newXMLNode('type',input$type, parent=masterNode)
@@ -398,19 +397,18 @@ shinyServer(function(input, output, session) {
                 newXMLNode('vulnerable', input$vulnerable, parent=masterNode)
                 newXMLNode('resist', input$resist, parent=masterNode)
                 newXMLNode('immune', input$immune, parent=masterNode)
-                newXMLNode('conitionImmune', input$conditionImmune, parent=masterNode)
+                newXMLNode('conditionImmune', input$conditionImmune, parent=masterNode)
                 newXMLNode('senses', input$senses, parent=masterNode)
                 newXMLNode('languages', input$languages, parent=masterNode)
-                newXMLNode('size', input$size, parent=masterNode)
                 
                 # Add saves 
                 #TODO Better format of saving modifiers
-                newXMLNode('save', paste0('Srength +',input$str_save), parent=masterNode)
+                newXMLNode('save', paste0('Strength +',input$str_save), parent=masterNode)
                 newXMLNode('save', paste0('Dexterity +',input$dex_save), parent=masterNode)
                 newXMLNode('save', paste0('Constitution +',input$con_save), parent=masterNode) 
                 newXMLNode('save', paste0('Wisdom +',input$wis_save), parent=masterNode)
                 newXMLNode('save', paste0('Intelligence +',input$int_save), parent=masterNode)
-                newXMLNode('save', paste0('Charism +',input$cha_save), parent=masterNode)
+                newXMLNode('save', paste0('Charisma +',input$cha_save), parent=masterNode)
                 
                 
                 
@@ -432,42 +430,43 @@ shinyServer(function(input, output, session) {
                         new_parent = newXMLNode(input[[paste0(inserted[i],'_type')]],'', parent = masterNode)
                         newXMLNode('name',input[[paste0(inserted[i],'_name')]], parent = new_parent)
                         newXMLNode('text',input[[paste0(inserted[i],'_desc')]], parent = new_parent)  
-                        newXMLNode('attack',input[[paste0(inserted[i],'_attack')]], parent = new_parent)  
-                        
-                        
+                        newXMLNode('attack',input[[paste0(inserted[i],'_attack')]], parent = new_parent)   
                     }
-                    
-                    
                 }
             }
             
             
             
             # Clean output XML
-            xmlParse(toString.XMLNode(xmlParse(toString.XMLNode(doc))) %>% 
-                         str_remove_all(pattern = '<.*\\/>\\\n') %>%
-                         str_remove_all(pattern = '<.*>NA</.*>') %>%
-            str_remove_all(pattern = '<.*>.* \\+0</.*>') %>%
-                str_remove_all(pattern= '[:blank:]{5,}'))
-        }})
-    
-    
-    output$finalxml <- renderPrint(new())
-    
-    
-    observeEvent(input$copyButtonAll, {
-        x <- toString.XMLNode(new())
-        clipr::write_clip(x)
+            toString.XMLNode(xmlParse(toString.XMLNode(masterNode))) %>%
+                    str_remove('<\\?xml version="1.0"\\?>.*\\n') %>%
+                str_remove_all(pattern = '[:blank:]*<.*\\/>.*\\n') %>%
+                    str_remove_all(pattern = '[:blank:]*<.*>NA</.*>\\n') %>%
+                str_remove_all(pattern = '[:blank:]*<.*>.* \\+0</.*>\\\n') %>%
+                str_remove_all('[:blank:]*$')
+        
+        }
     })
+    
+    
+    output$finalxml <- renderPrint(cat(new()))
     
     
     observeEvent(input$copyButtonElement, {
-        x <- toString.XMLNode(xmlChildren(xmlRoot(new()))[[input$category]])
-        clipr::write_clip(x)
+        x <- toString.XMLNode(cat(new())) %>% 
+            str_remove_all('NULL$') %>%
+            str_remove_all('[:space:]*$')
+        write_clip(x)
     })
     
+    
+    # observeEvent(input$copyButtonElement, {
+    #     x <- toString.XMLNode(xmlChildren(xmlRoot(new()))[[input$category]])
+    #     write_clip(x)
+    # })
+    
     observe({
-        if(input$category != 'NA') {
+        if(input$category != '') {
             output$copyButtonElement <- renderUI(actionButton("copyButtonElement", 
                                                               paste("Copy",input$category),
                                                               icon = icon('copy')))

@@ -24,12 +24,11 @@ shinyUI(fluidPage(
                    uiOutput('fields'))
         ),
         column(4,
-               actionButton('reset','Reset', icon = icon('refresh')),
+               fluidRow(
+                   column(4,actionButton('reset','Reset', icon = icon('refresh'))),
+                   column(8, column(6,uiOutput('copyButtonElement')),align='center')),
                hr(),
                verbatimTextOutput('finalxml'),
-               fluidRow(
-                   column(6,actionButton("copyButtonAll", "Copy All",icon = icon('copy'))),
-                   column(6,uiOutput('copyButtonElement')),align='center'),
                textOutput('properties')
         )
     )
