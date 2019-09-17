@@ -58,8 +58,7 @@ shinyServer(function(input, output, session) {
     observe({
         subCat_r <- reactive({
             if (input$category == 'item') {
-                conditionalPanel(condition = "input.category == 'item'",
-                                 selectInput('type', 
+                selectInput('type', 
                                              'Select a type',
                                              choices=c('medium armor' = 'MA',
                                                        'heavy armor' = 'HA',
