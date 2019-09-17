@@ -3,7 +3,8 @@ library(shinyjs)
 library(XML)
 library(stringr)
 library(shinyWidgets)
-library(clipr)
+# library(clipr)
+library(rclipboard)
 
 layout <- "data/layout.xml"
 # layout <- "CompendiumBuildR/data/layout.xml"
@@ -319,12 +320,14 @@ shinyServer(function(input, output, session) {
             selector = '#traitsActions',
             ## wrap element in a div with id for ease of removal
             ui = tags$div(
+                wellPanel(style = 'border-color: #828088',
                 fluidRow(
-                    column(2,selectInput(paste0(id,'_type'),'', choices = c('trait', 'action','reaction','legendary'))),
-                    column(2, textInput(paste0(id,'_name'),'')),
-                    column(2, textInput(paste0(id,'_attack'),'')),
-                    column(6, textAreaInput(paste0(id,'_desc'),label = ''))),
-                id = id
+                    column(12, textInput(paste0(id,'_name'),'Name'))),
+                fluidRow(
+                    column(4, selectInput(paste0(id,'_type'),'Type', choices = c('trait', 'action','reaction','legendary')),
+                           textInput(paste0(id,'_attack'),'Attack')),
+                    column(8, textAreaInput(paste0(id,'_desc'),label = 'Description',height = '200px'))),
+                id = id)
             )
         )
         inserted <<- c(id, inserted)
@@ -411,17 +414,17 @@ shinyServer(function(input, output, session) {
                                                newXMLNode('name',input[[paste0(inserted[i],'_name')]]), 
                                                newXMLNode('text',input[[paste0(inserted[i],'_desc')]]),
                                                newXMLNode('attack',input[[paste0(inserted[i],'_attack')]])
-                                               )
                                     )
+                        )
                     }
                 }
             }
             
             # Clean output XML
             toString.XMLNode(xmlParse(toString.XMLNode(masterNode))) %>%
-                    str_remove('<\\?xml version="1.0"\\?>.*\\n') %>%
+                str_remove('<\\?xml version="1.0"\\?>.*\\n') %>%
                 str_remove_all(pattern = '[:blank:]*<.*\\/>.*\\n') %>%
-                    str_remove_all(pattern = '[:blank:]*<.*>NA</.*>\\n') %>%
+                str_remove_all(pattern = '[:blank:]*<.*>NA</.*>\\n') %>%
                 str_remove_all(pattern = '[:blank:]*<.*>.* \\+0</.*>\\\n') %>%
                 str_remove_all('[:blank:]*$')
         }
@@ -430,30 +433,27 @@ shinyServer(function(input, output, session) {
     
     observe({
         output$finalxml <- renderPrint(cat(new()))
-        })
-    
-    
-    
-    
-    
-    observeEvent(input$copyButtonElement, {
-        x <- toString.XMLNode(cat(new())) %>% 
-            str_remove_all('NULL$') %>%
-            str_remove_all('[:space:]*$')
-        write_clip(x)
     })
     
     
-    # observeEvent(input$copyButtonElement, {
-    #     x <- toString.XMLNode(xmlChildren(xmlRoot(new()))[[input$category]])
-    #     write_clip(x)
-    # })
+    xmlChunk <- reactive({
+        toString.XMLNode(cat(new())) %>% 
+            str_remove_all('NULL$') %>%
+            str_remove_all('[:space:]*$')
+    })
     
     observe({
         if(input$category != '') {
-            output$copyButtonElement <- renderUI(actionButton("copyButtonElement", 
-                                                              paste("Copy",input$category),
-                                                              icon = icon('copy')))
+            output$copyButtonElement <- renderUI({
+                rclipButton("copyButtonElement", 
+                            paste("Copy",input$category), 
+                            xmlChunk(), 
+                            icon = if(input$category == 'item'){
+                                icon("coins")
+                            } else if (input$category == 'monster') {
+                                icon("shield-alt")
+                            } else { icon("clipboard")})
+            })
         } else {
             output$copyButtonElement <- renderUI(HTML(''))}
     })
