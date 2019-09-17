@@ -252,22 +252,22 @@ shinyServer(function(input, output, session) {
                                         ),
                                         hr(),
                                         fluidRow(column(3, tags$h5('STR')), 
-                                                 column(6,numericInput('str',NULL, value=NULL)),
+                                                 column(6,numericInput('str',NULL, value=10)),
                                                  column(3, numericInput('str_save',NULL, 0))),
                                         fluidRow(column(3, tags$h5('DEX')), 
-                                                 column(6,numericInput('dex',NULL, value=NULL)),
+                                                 column(6,numericInput('dex',NULL, value=10)),
                                                  column(3, numericInput('dex_save',NULL, 0))),
                                         fluidRow(column(3, tags$h5('CON')), 
-                                                 column(6,numericInput('con',NULL, value=NULL)),
+                                                 column(6,numericInput('con',NULL, value=10)),
                                                  column(3, numericInput('con_save',NULL, 0))),
                                         fluidRow(column(3, tags$h5('INT')), 
-                                                 column(6,numericInput('int',NULL, value=NULL)),
+                                                 column(6,numericInput('int',NULL, value=10)),
                                                  column(3, numericInput('int_save',NULL, 0))),
                                         fluidRow(column(3, tags$h5('WIS')), 
-                                                 column(6,numericInput('wis',NULL, value=NULL)),
+                                                 column(6,numericInput('wis',NULL, value=10)),
                                                  column(3, numericInput('wis_save',NULL, 0))),
                                         fluidRow(column(3, tags$h5('CHA')), 
-                                                 column(6,numericInput('cha',NULL, value=NULL)),
+                                                 column(6,numericInput('cha',NULL, value=10)),
                                                  column(3, numericInput('cha_save',NULL, 0)))
                                     )
                     ),
@@ -286,7 +286,15 @@ shinyServer(function(input, output, session) {
                              column(6, skill_list_2)),
                     hr(),
                     fluidRow(
-                        fluidRow(column(6,tags$h4('Traits & Actions')), column(3, actionButton('insertBtn', '+')),column(3, actionButton('removeBtn', '-'))),
+                        fluidRow(column(6,tags$h4('Traits & Actions')), 
+                                 column(6, actionButton('insertBtn', 
+                                                        'Add Section', 
+                                                        icon = icon('plus-circle'), 
+                                                        style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                        actionButton('removeBtn', 
+                                                     'Remove Last', 
+                                                     icon = icon('minus-circle'),  
+                                                     style="color: #000; background-color: #e47c7c; border-color: #c53d3d"))),
                         fluidRow(column(2,tags$h4('Type')),column(2,tags$h4('Name')),column(2,tags$h4('Attack')), column(6,tags$h4('Description'))),
                         tags$div(id = 'traitsActions')
                     )
@@ -413,7 +421,6 @@ shinyServer(function(input, output, session) {
                     str_remove_all(pattern = '[:blank:]*<.*>NA</.*>\\n') %>%
                 str_remove_all(pattern = '[:blank:]*<.*>.* \\+0</.*>\\\n') %>%
                 str_remove_all('[:blank:]*$')
-        
         }
     })
     
