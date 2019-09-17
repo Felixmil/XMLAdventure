@@ -34,25 +34,26 @@ skills_simple <- str_remove(skills, ' \\(.*\\)')
 
 shinyServer(function(input, output, session) {
     
-    
+    # UI Resets
     observeEvent(input$reset,  {
         reset('form')
         reset('fields')
         updateSliderTextInput(session, 'cr',selected = 'NA')
         updateSliderTextInput(session, 'size', selected = 'NA')
-        rep(
-            {removeUI(
+        for (i in length(inserted):1) {
+            removeUI(
                 ## pass in appropriate div id
-                selector = paste0('#', inserted[length(inserted)])
+                selector = paste0('#', inserted[i])
             )
-                inserted <<- inserted[-length(inserted)]}, length(inserted))
+        }
+        inserted <<- c()
     })
-    
     
     observeEvent(c(input$category), {
         click('reset')
     })
     
+    # UI item type
     observe({
         subCat_r <- reactive({
             if (input$category == 'item') {
@@ -82,6 +83,7 @@ shinyServer(function(input, output, session) {
         output$subCat <- renderUI(subCat_d())
     })
     
+    # UI form
     observe({
         fields_r <-  reactive({
             if (input$category == '') {
@@ -299,7 +301,8 @@ shinyServer(function(input, output, session) {
     }
     )
     
-    inserted <- c()
+    # Text box add and delete for Traits & Actions
+    inserted <<- c()
     
     observeEvent(input$insertBtn, {
         btn <- input$insertBtn
@@ -322,46 +325,16 @@ shinyServer(function(input, output, session) {
     observeEvent(input$removeBtn, {
         removeUI(
             ## pass in appropriate div id
-            selector = paste0('#', inserted[length(inserted)])
+            selector = paste0('#', inserted[1])
         )
-        inserted <<- inserted[-length(inserted)]
+        inserted <<- inserted[-1]
     })
     
-    
-    # observe({
-    #     insertUI(selector = "#form",multiple = T,
-    #              ui = 
-    #                  if (input$category == 'item' & input$type == 'M') {
-    #                      list(
-    #                          h4('General'),
-    #                          textInput('name','Name:',''),
-    #                           radioButtons('magic',
-    #                                        'Magic Item:',
-    #                                        choices = c('Yes'=1,'No'=0),0),
-    #                           h4('Damages'),
-    #                           textInput('dmg1',
-    #                                     'Damage:',placeholder = '2d6+2'))
-    #                  } else if (input$category == 'item' & input$type == 'R') {
-    #                      list(h4('General'),
-    #                           textInput('name','Name:'),
-    #                           radioButtons('magic',
-    #                                        'Magic Item:',
-    #                                        choices = c('Yes'=1,'No'=0), 0),
-    #                           h4('Damages'),
-    #                           textInput('dmg1',
-    #                                     'Damage:',placeholder = '2d6+2',value = ''),
-    #                           textInput('range','Range:',value = '',placeholder = '20/60'))
-    #                  }
-    #              )
-    # }
-    # )
-    
     new <- reactive({
-        # doc = xmlTreeParse(layout, useInternalNodes = T) 
-        
+        input$insertBtn
+        input$removeBtn
         if(input$category !='') {
             # PARSE STRING
-            # root = xmlRoot(doc)
             masterNode = newXMLNode(input$category)
             newXMLNode('name',input$name, parent=masterNode)
             if (input$category == 'item') {
@@ -424,8 +397,6 @@ shinyServer(function(input, output, session) {
                 
                 # Add Traits & Actions
                 if (length(inserted > 0)) {
-                    pleasreact <- input$insertBtn
-                    pleasreact <- input$removeBtn
                     for (i in 1:length(inserted)) {
                         new_parent = newXMLNode(input[[paste0(inserted[i],'_type')]],'', parent = masterNode)
                         newXMLNode('name',input[[paste0(inserted[i],'_name')]], parent = new_parent)
@@ -434,8 +405,6 @@ shinyServer(function(input, output, session) {
                     }
                 }
             }
-            
-            
             
             # Clean output XML
             toString.XMLNode(xmlParse(toString.XMLNode(masterNode))) %>%
@@ -449,7 +418,12 @@ shinyServer(function(input, output, session) {
     })
     
     
-    output$finalxml <- renderPrint(cat(new()))
+    observe({
+        output$finalxml <- renderPrint(cat(new()))
+        })
+    
+    
+    
     
     
     observeEvent(input$copyButtonElement, {
