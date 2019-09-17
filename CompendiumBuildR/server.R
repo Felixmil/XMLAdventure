@@ -406,10 +406,13 @@ shinyServer(function(input, output, session) {
                 # Add Traits & Actions
                 if (length(inserted > 0)) {
                     for (i in 1:length(inserted)) {
-                        new_parent = newXMLNode(input[[paste0(inserted[i],'_type')]],'', parent = masterNode)
-                        newXMLNode('name',input[[paste0(inserted[i],'_name')]], parent = new_parent)
-                        newXMLNode('text',input[[paste0(inserted[i],'_desc')]], parent = new_parent)  
-                        newXMLNode('attack',input[[paste0(inserted[i],'_attack')]], parent = new_parent)   
+                        addChildren(masterNode, 
+                                    newXMLNode(input[[paste0(inserted[i],'_type')]],
+                                               newXMLNode('name',input[[paste0(inserted[i],'_name')]]), 
+                                               newXMLNode('text',input[[paste0(inserted[i],'_desc')]]),
+                                               newXMLNode('attack',input[[paste0(inserted[i],'_attack')]])
+                                               )
+                                    )
                     }
                 }
             }
