@@ -77,7 +77,7 @@ shinyServer(function(input, output, session) {
                                                        'adventuring gear' = 'G',
                                                        'money' = '$',
                                                        ''),
-                                             selected = ''))
+                                             selected = '')
             } else {NULL}
         })
         subCat_d <- debounce(subCat_r, 500)
@@ -174,7 +174,7 @@ shinyServer(function(input, output, session) {
                                               multiple = TRUE))),
                     textAreaInput('text','
                                   Description',
-                                  '')
+                                  '',width = '195%')
                     
                 )
                 
@@ -183,20 +183,20 @@ shinyServer(function(input, output, session) {
                 
                 skill_list_1 <- list()
                 for (skill in skills_simple[1:round(length(skills_simple)/2)]) {
-                    skill_i <- fluidRow(column(8, tags$h5(skill)),
-                                        column(4,numericInput(skill,NULL, value=0)))
+                    skill_i <- fluidRow(column(7, tags$h5(skill)),
+                                        column(5,numericInput(skill,NULL, value=0)))
                     skill_list_1 <- append(skill_list_1,skill_i$children)
                 }
                 
                 skill_list_2 <- list()
                 for (skill in skills_simple[(round(length(skills_simple)/2)+1):length(skills_simple)]) {
-                    skill_i <- fluidRow(column(8, tags$h5(skill)),
-                                        column(4,numericInput(skill,NULL, value=0)))
+                    skill_i <- fluidRow(column(7, tags$h5(skill)),
+                                        column(5,numericInput(skill,NULL, value=0)))
                     skill_list_2 <- append(skill_list_2,skill_i$children)
                 }
                 
                 
-                list(
+                list(wellPanel(
                     textInput('name',
                               'Name',value = '',
                               width = '100%'),
@@ -207,34 +207,36 @@ shinyServer(function(input, output, session) {
                              column(3,textInput('speed',
                                                 'Speed',
                                                 value = ''))),
-                    
-                    sliderTextInput('cr',
-                                    'Challenge Rating',
-                                    choices = c('NA',
-                                                '00',
-                                                '0',
-                                                '1/2',
-                                                '1/4',
-                                                '1/8', 
-                                                as.character(1:30)),
-                                    selected = 'NA',
-                                    grid = T, 
-                                    hide_min_max = T,
-                                    width = '100%'),
-                    sliderTextInput('size',
-                                    'Size',
-                                    choices = c('NA' = 'NA',
-                                                'tiny' = 'T',
-                                                'small' = 'S',
-                                                'medium' = 'M',
-                                                'large' = 'L',
-                                                'huge' = 'H',
-                                                'gargantuan' = 'G'),
-                                    selected = 'NA',
-                                    grid = T,
-                                    hide_min_max = T,
-                                    width = '100%'),
-                    fluidRow(column(3,numericInput('passive','Passive Percept.', value=NULL)
+                    fluidRow(align='center',
+                             sliderTextInput('cr',
+                                             'Challenge Rating',
+                                             choices = c('NA',
+                                                         '00',
+                                                         '0',
+                                                         '1/2',
+                                                         '1/4',
+                                                         '1/8', 
+                                                         as.character(1:30)),
+                                             selected = 'NA',
+                                             grid = T, 
+                                             hide_min_max = T,
+                                             width = '75%'),
+                             sliderTextInput('size',
+                                             'Size',
+                                             choices = c('NA' = 'NA',
+                                                         'tiny' = 'T',
+                                                         'small' = 'S',
+                                                         'medium' = 'M',
+                                                         'large' = 'L',
+                                                         'huge' = 'H',
+                                                         'gargantuan' = 'G'),
+                                             selected = 'NA',
+                                             grid = T,
+                                             hide_min_max = T,
+                                             width = '75%'))),
+                    hr(),
+                    wellPanel(
+                        fluidRow(column(3,numericInput('passive','Passive Percept.', value=NULL)
                     ),
                     column(3,numericInput('init',
                                           'Initiative bonus',value = '')),
@@ -245,7 +247,7 @@ shinyServer(function(input, output, session) {
                                        'HP (Dice formula)',
                                        ''))),
                     fluidRow(column(8,
-                                    wellPanel(
+                                    wellPanel(style = 'border-color: #828088',
                                         fluidRow(
                                             column(3,tags$h4('Abilities')), 
                                             column(6,tags$h4('Score')),
@@ -280,23 +282,27 @@ shinyServer(function(input, output, session) {
                            textInput('senses','Senses',value = ''),
                            textInput('languages','Languages',value = '')
                     )
+                    )),
+                    hr(),
+                    
+                    wellPanel(
+                        fluidRow(column(12,tags$h4('Skills'))),
+                        fluidRow(column(6,skill_list_1),
+                                 column(6, skill_list_2),
+                                 ' '
+                        )
                     ),
                     hr(),
-                    fluidRow(tags$h4('Skills'),
-                             column(6,skill_list_1),
-                             column(6, skill_list_2)),
-                    hr(),
-                    fluidRow(
-                        fluidRow(column(6,tags$h4('Traits & Actions')), 
-                                 column(6, actionButton('insertBtn', 
+                    wellPanel(
+                        fluidRow(column(4,tags$h4('Traits & Actions')), 
+                                 column(8, actionButton('insertBtn', 
                                                         'Add Section', 
                                                         icon = icon('plus-circle'), 
                                                         style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                                         actionButton('removeBtn', 
                                                      'Remove Last', 
                                                      icon = icon('minus-circle'),  
-                                                     style="color: #000; background-color: #e47c7c; border-color: #c53d3d"))),
-                        fluidRow(column(2,tags$h4('Type')),column(2,tags$h4('Name')),column(2,tags$h4('Attack')), column(6,tags$h4('Description'))),
+                                                     style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), align='right')),
                         tags$div(id = 'traitsActions')
                     )
                     
