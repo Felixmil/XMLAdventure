@@ -10,6 +10,15 @@ layout <- "data/layout.xml"
 # layout <- "CompendiumBuildR/data/layout.xml"
 
 
+# Abilities
+
+abilities <- c('Force',
+               'Dexterity',
+               'Constitution',
+               'Intelligence',
+               'Wisdom',
+               'Charisma')
+
 # skills
 
 skills <- c('Acrobatics (Dex)',
@@ -309,6 +318,9 @@ shinyServer(function(input, output, session) {
                 )
                 
             } else if (input$category == 'spell' ){
+                
+                reset('form')
+                
                 list(wellPanel(
                     textInput('name',
                               'Name',
@@ -330,9 +342,18 @@ shinyServer(function(input, output, session) {
                                                ''),
                                            selected = '')
                         ),
-                        column(3, numericInput('level',label = 'Level',NULL, min = 0,step = 1)
+                        column(3, 
+                               numericInput('level',
+                                            label = 'Level',
+                                            NULL, 
+                                            min = 0,
+                                            step = 1)
                         ),
-                        column(3, div(materialSwitch(inputId = "ritual", label = "Ritual", status = "primary"), style='padding-top: 35px;'))
+                        column(3, 
+                               div(materialSwitch(inputId = "ritual", 
+                                                  label = "Ritual", 
+                                                  status = "info"), 
+                                   style='padding-top: 35px;'))
                     )),
                     hr(),
                     wellPanel(
@@ -352,18 +373,84 @@ shinyServer(function(input, output, session) {
                     ),
                     hr(),
                     wellPanel(
-                        fluidRow(column(4,tags$h4('Spell Descriptions')), 
-                                 column(8, actionButton('insertBtn', 
-                                                        'Add description', 
-                                                        icon = icon('plus-circle'), 
-                                                        style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                        fluidRow(column(4,
+                                        tags$h4('Spell Descriptions')), 
+                                 column(8, 
+                                        actionButton('insertBtn', 
+                                                     'Add description', 
+                                                     icon = icon('plus-circle'), 
+                                                     style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                                         actionButton('removeBtn', 
                                                      'Remove Last', 
                                                      icon = icon('minus-circle'),  
-                                                     style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), align='right')),
+                                                     style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), 
+                                        align='right')),
                         tags$div(id = 'descriptionblocks')
                     )
                 )
+            }
+            else if (input$category == 'background') {
+                
+                reset('form')
+                
+                skill_list_1 <- list()
+                for (skill in skills_simple[1:round(length(skills_simple)/2)]) {
+                    skill_i <- fluidRow(column(9, skill),
+                                        column(3,materialSwitch(str_remove_all(skill,' '),
+                                                                NULL, 
+                                                                value=FALSE, 
+                                                                status = "info")))
+                    skill_list_1 <- append(skill_list_1,skill_i$children)
+                }
+                
+                skill_list_2 <- list()
+                for (skill in skills_simple[(round(length(skills_simple)/2)+1):length(skills_simple)]) {
+                    skill_i <- fluidRow(column(9, skill),
+                                        column(3,materialSwitch(str_remove_all(skill,' '),
+                                                                NULL, 
+                                                                value=FALSE, 
+                                                                status = "info")))
+                    skill_list_2 <- append(skill_list_2,skill_i$children)
+                }
+                
+                ability_list <- list()
+                for (ability in abilities) {
+                    ability_i <- fluidRow(column(7, ability),
+                                          column(5, materialSwitch(ability, 
+                                                                   NULL, 
+                                                                   value = FALSE, 
+                                                                   status = "info"))
+                    )
+                    ability_list <- append(ability_list, ability_i$children)
+                }
+                
+                list(
+                    textInput('name',
+                              'Name',
+                              value = '',
+                              width = '100%'),
+                    wellPanel(
+                        tags$h4('Proficiencies'),
+                        fluidRow(column(8,
+                                        tags$h5("Skills", align='center'),
+                                        hr(),
+                                        fluidRow(
+                                            column(6,
+                                                   skill_list_1),
+                                            column(6, '',
+                                                   skill_list_2))),
+                                 column(4, 
+                                        tags$h5("Saving Throws", align='center'),
+                                        hr(),
+                                        fluidRow(renderUI(HTML('<br><br>'))),
+                                        fluidRow(ability_list),
+                                        fluidRow(renderUI(HTML('')))))
+                        
+                        
+                        
+                    )
+                )
+                
             }
             else {
                 reset('form')
@@ -418,7 +505,7 @@ shinyServer(function(input, output, session) {
                 ## wrap element in a div with id for ease of removal
                 ui = tags$div(
                     wellPanel(style = 'border-color: #828088',
-                              textInput('dummyname','',''),
+                              textInput('notUsedInput','',''),
                               textAreaInput(paste0(id,'_desc'),
                                             label = '',
                                             height = '200px'),
@@ -514,6 +601,8 @@ shinyServer(function(input, output, session) {
                 for (skill in skills_simple) {
                     skills_v <- append(skills_v, paste(skill, input[[skill]]))
                 }
+                
+                
                 skills_v <- paste(skills_v, collapse = ',')
                 skills_v <- skills_v %>% str_remove_all(.,'(,)?[^,]* 0') %>% str_remove(.,'^,')
                 newXMLNode('skill', skills_v, parent=masterNode)
@@ -548,6 +637,24 @@ shinyServer(function(input, output, session) {
                         newXMLNode('text', input[[paste0(inserted[i],'_desc')]], parent = masterNode)
                     }
                 }
+            } else if (input$category == 'background') {
+                skills_v <- c()
+                
+                for (ability in abilities) {
+                    if ( input[[ability]] == TRUE) {
+                        skills_v <- append(skills_v, ability)
+                    }
+                }
+                
+                for (skill in skills_simple) {
+                    if ( input[[str_remove_all(skill,' ')]] == TRUE) {
+                        skills_v <- append(skills_v, skill)
+                    }
+                }
+                
+                skills_v <- paste(skills_v, collapse = ', ')
+                skills_v <- skills_v %>% str_remove_all(.,'(,)?[^,]* 0') %>% str_remove(.,'^,')
+                newXMLNode('skill', skills_v, parent=masterNode)
             }
             
             # Clean output XML
