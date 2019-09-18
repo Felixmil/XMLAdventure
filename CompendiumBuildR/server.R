@@ -59,24 +59,24 @@ shinyServer(function(input, output, session) {
         subCat_r <- reactive({
             if (input$category == 'item') {
                 selectInput('type', 
-                                             'Select a type',
-                                             choices=c('medium armor' = 'MA',
-                                                       'heavy armor' = 'HA',
-                                                       'shield' = 'S',
-                                                       'melee weapon' = 'R',
-                                                       'ranged weapon' = 'M',
-                                                       'ammunition' = 'A',
-                                                       'rod' = 'RD',
-                                                       'staff' = 'ST',
-                                                       'wand' = 'WD',
-                                                       'ring' = 'RG',
-                                                       'potion' = 'P',
-                                                       'scroll' = 'SC',
-                                                       'wondrous item' = 'W',
-                                                       'adventuring gear' = 'G',
-                                                       'money' = '$',
-                                                       ''),
-                                             selected = '')
+                            'Select a type',
+                            choices=c('medium armor' = 'MA',
+                                      'heavy armor' = 'HA',
+                                      'shield' = 'S',
+                                      'melee weapon' = 'R',
+                                      'ranged weapon' = 'M',
+                                      'ammunition' = 'A',
+                                      'rod' = 'RD',
+                                      'staff' = 'ST',
+                                      'wand' = 'WD',
+                                      'ring' = 'RG',
+                                      'potion' = 'P',
+                                      'scroll' = 'SC',
+                                      'wondrous item' = 'W',
+                                      'adventuring gear' = 'G',
+                                      'money' = '$',
+                                      ''),
+                            selected = '')
             } else {NULL}
         })
         subCat_d <- debounce(subCat_r, 500)
@@ -177,6 +177,7 @@ shinyServer(function(input, output, session) {
                     
                 )
                 
+                
             } else if (input$category == 'monster') { 
                 reset('form')
                 
@@ -236,52 +237,52 @@ shinyServer(function(input, output, session) {
                     hr(),
                     wellPanel(
                         fluidRow(column(3,numericInput('passive','Passive Percept.', value=NULL)
-                    ),
-                    column(3,numericInput('init',
-                                          'Initiative bonus',value = '')),
-                    column(3,textInput('ac',
-                                       'AC (armor type)',
-                                       '')),
-                    column(3,textInput('hp',
-                                       'HP (Dice formula)',
-                                       ''))),
-                    fluidRow(column(8,
-                                    wellPanel(style = 'border-color: #828088',
-                                        fluidRow(
-                                            column(3,tags$h4('Abilities')), 
-                                            column(6,tags$h4('Score')),
-                                            column(3, tags$h4('Saving'))
-                                        ),
-                                        hr(),
-                                        fluidRow(column(3, tags$h5('STR')), 
-                                                 column(5,numericInput('str',NULL, value=10)),
-                                                 column(4, numericInput('str_save',NULL, 0))),
-                                        fluidRow(column(3, tags$h5('DEX')), 
-                                                 column(5,numericInput('dex',NULL, value=10)),
-                                                 column(4, numericInput('dex_save',NULL, 0))),
-                                        fluidRow(column(3, tags$h5('CON')), 
-                                                 column(5,numericInput('con',NULL, value=10)),
-                                                 column(4, numericInput('con_save',NULL, 0))),
-                                        fluidRow(column(3, tags$h5('INT')), 
-                                                 column(5,numericInput('int',NULL, value=10)),
-                                                 column(4, numericInput('int_save',NULL, 0))),
-                                        fluidRow(column(3, tags$h5('WIS')), 
-                                                 column(5,numericInput('wis',NULL, value=10)),
-                                                 column(4, numericInput('wis_save',NULL, 0))),
-                                        fluidRow(column(3, tags$h5('CHA')), 
-                                                 column(5,numericInput('cha',NULL, value=10)),
-                                                 column(4, numericInput('cha_save',NULL, 0)))
-                                    )
-                    ),
-                    column(4,
-                           textInput('vulnerable','Dmg Vulnerabilities',value = ''),
-                           textInput('resist','Dmg Resistances', value = ''),
-                           textInput('immune','Dmg Immunities',value = ''),
-                           textInput('conditionImmune','Conditionnal Immunities',value = ''),
-                           textInput('senses','Senses',value = ''),
-                           textInput('languages','Languages',value = '')
-                    )
-                    )),
+                        ),
+                        column(3,numericInput('init',
+                                              'Initiative bonus',value = '')),
+                        column(3,textInput('ac',
+                                           'AC (armor type)',
+                                           '')),
+                        column(3,textInput('hp',
+                                           'HP (Dice formula)',
+                                           ''))),
+                        fluidRow(column(8,
+                                        wellPanel(style = 'border-color: #828088',
+                                                  fluidRow(
+                                                      column(3,tags$h4('Abilities')), 
+                                                      column(6,tags$h4('Score')),
+                                                      column(3, tags$h4('Saving'))
+                                                  ),
+                                                  hr(),
+                                                  fluidRow(column(3, tags$h5('STR')), 
+                                                           column(5,numericInput('str',NULL, value=10)),
+                                                           column(4, numericInput('str_save',NULL, 0))),
+                                                  fluidRow(column(3, tags$h5('DEX')), 
+                                                           column(5,numericInput('dex',NULL, value=10)),
+                                                           column(4, numericInput('dex_save',NULL, 0))),
+                                                  fluidRow(column(3, tags$h5('CON')), 
+                                                           column(5,numericInput('con',NULL, value=10)),
+                                                           column(4, numericInput('con_save',NULL, 0))),
+                                                  fluidRow(column(3, tags$h5('INT')), 
+                                                           column(5,numericInput('int',NULL, value=10)),
+                                                           column(4, numericInput('int_save',NULL, 0))),
+                                                  fluidRow(column(3, tags$h5('WIS')), 
+                                                           column(5,numericInput('wis',NULL, value=10)),
+                                                           column(4, numericInput('wis_save',NULL, 0))),
+                                                  fluidRow(column(3, tags$h5('CHA')), 
+                                                           column(5,numericInput('cha',NULL, value=10)),
+                                                           column(4, numericInput('cha_save',NULL, 0)))
+                                        )
+                        ),
+                        column(4,
+                               textInput('vulnerable','Dmg Vulnerabilities',value = ''),
+                               textInput('resist','Dmg Resistances', value = ''),
+                               textInput('immune','Dmg Immunities',value = ''),
+                               textInput('conditionImmune','Conditionnal Immunities',value = ''),
+                               textInput('senses','Senses',value = ''),
+                               textInput('languages','Languages',value = '')
+                        )
+                        )),
                     hr(),
                     
                     wellPanel(
@@ -456,7 +457,9 @@ shinyServer(function(input, output, session) {
             # PARSE STRING
             masterNode = newXMLNode(input$category)
             newXMLNode('name',input$name, parent=masterNode)
+            
             if (input$category == 'item') {
+                
                 newXMLNode('type',input$type, parent=masterNode)
                 newXMLNode('detail',input$detail, parent=masterNode)
                 newXMLNode('magic',input$magic, parent=masterNode)
@@ -470,6 +473,7 @@ shinyServer(function(input, output, session) {
                 newXMLNode('dmgType',input$dmgType, parent=masterNode)
                 newXMLNode('property',paste(input$property,collapse=','), parent=masterNode)
                 newXMLNode('range', input$range, parent=masterNode)
+                
             } else if (input$category == 'monster') {
                 
                 newXMLNode('size', input$size, parent=masterNode)
