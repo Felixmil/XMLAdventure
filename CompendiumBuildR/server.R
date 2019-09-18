@@ -302,11 +302,69 @@ shinyServer(function(input, output, session) {
                                                      'Remove Last', 
                                                      icon = icon('minus-circle'),  
                                                      style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), align='right')),
-                        tags$div(id = 'traitsActions')
+                        tags$div(id = 'traitsactions')
                     )
                     
                 )
-            } else {
+                
+            } else if (input$category == 'spell' ){
+                list(wellPanel(
+                    textInput('name',
+                              'Name',
+                              value = '',
+                              width = '100%'),
+                    fluidRow(
+                        column(6,
+                               selectInput('school',
+                                           'School',
+                                           choices = c(
+                                               'abjuration' = 'A',
+                                               'conjuration' = 'C',
+                                               'divination' = 'D',
+                                               'enchantment' = 'EN',
+                                               'evocation' = 'EV',
+                                               'illusion' = 'I',
+                                               'necromancy' = 'N',
+                                               'transmutation' = 'T',
+                                               ''),
+                                           selected = '')
+                        ),
+                        column(3, numericInput('level',label = 'Level',NULL, min = 0,step = 1)
+                        ),
+                        column(3, div(materialSwitch(inputId = "ritual", label = "Ritual", status = "primary"), style='padding-top: 35px;'))
+                    )),
+                    hr(),
+                    wellPanel(
+                        fluidRow(
+                            column(4,
+                                   textInput('time','Casting Time', value = '')),
+                            column(4,
+                                   textInput('range','Range',value = '')),
+                            column(4, textInput('duration','Duration',value=''))),
+                        fluidRow(
+                            column(6,
+                                   textInput('roll','Roll','')),
+                            column(6,
+                                   textInput('classes','Classes','',placeholder = 'ABC, ABC, ...'))
+                        ),
+                        textInput('components', 'Components',value = '',width = '100%')
+                    ),
+                    hr(),
+                    wellPanel(
+                        fluidRow(column(4,tags$h4('Spell Descriptions')), 
+                                 column(8, actionButton('insertBtn', 
+                                                        'Add description', 
+                                                        icon = icon('plus-circle'), 
+                                                        style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                        actionButton('removeBtn', 
+                                                     'Remove Last', 
+                                                     icon = icon('minus-circle'),  
+                                                     style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), align='right')),
+                        tags$div(id = 'descriptionblocks')
+                    )
+                )
+            }
+            else {
                 reset('form')
                 HTML('Not implemented (yet!)')
             }})
@@ -315,28 +373,73 @@ shinyServer(function(input, output, session) {
     }
     )
     
-    # Text box add and delete for Traits & Actions
+    # Add supplementary blocks to XML
+    
     inserted <<- c()
     
     observeEvent(input$insertBtn, {
-        btn <- input$insertBtn
-        id <- paste0('text',btn)
-        insertUI(
-            selector = '#traitsActions',
-            ## wrap element in a div with id for ease of removal
-            ui = tags$div(
-                wellPanel(style = 'border-color: #828088',
-                fluidRow(
-                    column(12, textInput(paste0(id,'_name'),'Name'))),
-                fluidRow(
-                    column(4, selectInput(paste0(id,'_type'),'Type', choices = c('trait', 'action','reaction','legendary')),
-                           textInput(paste0(id,'_attack'),'Attack')),
-                    column(8, textAreaInput(paste0(id,'_desc'),label = 'Description',height = '200px'))),
-                id = id)
+        
+        
+        if (input$category == 'monster') {
+            btn <- input$insertBtn
+            id <- paste0('addedblock',btn)
+            insertUI(
+                selector = '#traitsactions',
+                ## wrap element in a div with id for ease of removal
+                ui = tags$div(
+                    wellPanel(style = 'border-color: #828088',
+                              fluidRow(
+                                  column(12, 
+                                         textInput(paste0(id,'_name'),'Name'))),
+                              fluidRow(
+                                  column(4, 
+                                         selectInput(paste0(id,'_type'),
+                                                     'Type', 
+                                                     choices = c('trait', 
+                                                                 'action',
+                                                                 'reaction',
+                                                                 'legendary')),
+                                         textInput(paste0(id,'_attack'),'Attack')),
+                                  column(8, 
+                                         textAreaInput(paste0(id,'_desc'),
+                                                       label = 'Description',
+                                                       height = '200px'))),
+                              id = id)
+                )
             )
-        )
-        inserted <<- c(id, inserted)
+            inserted <<- c(id, inserted)
+        }
+        else if (input$category == 'spell'){
+            btn <- input$insertBtn
+            id <- paste0('addedblock',btn)
+            insertUI(
+                selector = '#descriptionblocks',
+                ## wrap element in a div with id for ease of removal
+                ui = tags$div(
+                    wellPanel(style = 'border-color: #828088',
+                              textInput('dummyname','',''),
+                              textAreaInput(paste0(id,'_desc'),
+                                            label = '',
+                                            height = '200px'),
+                              id = id)
+                )
+            )
+            
+            inserted <<- c(id, inserted)
+        }
+        
     })
+    
+    # # Text box add and delete for Spell descriptions
+    # 
+    # inserted <<- c()
+    # 
+    # observeEvent(input$insertBtn, {
+    #     btn <- input$insertBtn
+    #     id <- paste0('desc',btn)
+    
+    # })
+    
     
     observeEvent(input$removeBtn, {
         removeUI(
@@ -423,6 +526,24 @@ shinyServer(function(input, output, session) {
                         )
                     }
                 }
+            } else if (input$category == 'spell') {
+                newXMLNode('level', input$level, parent=masterNode)
+                newXMLNode('school', input$school, parent=masterNode)
+                newXMLNode('ritual', if (input$ritual == T) {'YES'} else {''}, parent=masterNode)
+                newXMLNode('time', input$time, parent=masterNode)
+                newXMLNode('range', input$range, parent=masterNode)
+                newXMLNode('components', input$components, parent=masterNode)
+                newXMLNode('duration', input$duration, parent=masterNode)
+                newXMLNode('roll', input$roll, parent=masterNode)
+                newXMLNode('classes', input$classes, parent=masterNode)
+                
+                
+                # Add spell descriptions
+                if (length(inserted > 0)) {
+                    for (i in 1:length(inserted)) {
+                        newXMLNode('text', input[[paste0(inserted[i],'_desc')]], parent = masterNode)
+                    }
+                }
             }
             
             # Clean output XML
@@ -457,7 +578,10 @@ shinyServer(function(input, output, session) {
                                 icon("coins")
                             } else if (input$category == 'monster') {
                                 icon("shield-alt")
-                            } else { icon("clipboard")})
+                            } else if (input$category == 'spell') {
+                                icon("magic")
+                            }
+                            else { icon("clipboard")})
             })
         } else {
             output$copyButtonElement <- renderUI(HTML(''))}
