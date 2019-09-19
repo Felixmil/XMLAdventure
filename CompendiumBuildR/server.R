@@ -453,7 +453,24 @@ shinyServer(function(input, output, session) {
                                         fluidRow(renderUI(HTML('')))))
                         
                     ),
+                    hr(),
+                    wellPanel(
+                        fluidRow(column(4,
+                                        tags$h4('Traits')), 
+                                 column(8, 
+                                        actionButton('insertBtn', 
+                                                     'Add Trait', 
+                                                     icon = icon('plus-circle'), 
+                                                     style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                        actionButton('removeBtn', 
+                                                     'Remove Last', 
+                                                     icon = icon('minus-circle'),  
+                                                     style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), 
+                                        align='right')),
+                        tags$div(id = 'backgroundtraitsblocks')
+                    ),
                     renderUI(modifierUI)
+                    
                 )
                 
             }
@@ -511,7 +528,26 @@ shinyServer(function(input, output, session) {
                 ui = tags$div(
                     wellPanel(style = 'border-color: #828088',
                               textInput('notUsedInput','',''),
-                              textAreaInput(paste0(id,'_desc'),
+                              textAreaInput(paste0(id,'_text'),
+                                            label = '',
+                                            height = '200px'),
+                              id = id)
+                )
+            )
+            
+            inserted <<- c(id, inserted)
+        } else if (input$category == 'background'){
+            btn <- input$insertBtn
+            id <- paste0('addedblock',btn)
+            insertUI(
+                selector = '#backgroundtraitsblocks',
+                ## wrap element in a div with id for ease of removal
+                ui = tags$div(
+                    wellPanel(style = 'border-color: #828088',
+                              textInput(paste0(id,'_name'),
+                                        'Name',
+                                        ''),
+                              textAreaInput(paste0(id,'_text'),
                                             label = '',
                                             height = '200px')),
                     id = id)
@@ -597,7 +633,7 @@ shinyServer(function(input, output, session) {
     # })
     
     
-   
+    
     
     new <- reactive({
         input$insertBtn
@@ -673,7 +709,7 @@ shinyServer(function(input, output, session) {
                 
                 # Add Traits & Actions
                 if (length(inserted > 0)) {
-                    for (i in 1:length(inserted)) {
+                    for (i in length(inserted):1) {
                         addChildren(masterNode, 
                                     newXMLNode(input[[paste0(inserted[i],'_type')]],
                                                newXMLNode('name',input[[paste0(inserted[i],'_name')]]), 
@@ -697,16 +733,18 @@ shinyServer(function(input, output, session) {
                 
                 # Add spell descriptions
                 if (length(inserted > 0)) {
-                    for (i in 1:length(inserted)) {
-                        newXMLNode('text', input[[paste0(inserted[i],'_desc')]], parent = masterNode)
+                    for (i in length(inserted):1) {
+                        addChildren(masterNode, 
+                                    newXMLNode('text', 
+                                               input[[paste0(inserted[i],'_text')]]))
                     }
                 }
             } else if (input$category == 'background') {
                 skills_v <- c()
                 
                 for (ability in abilities) {
-                    if ( input[[ability]] == TRUE) {
-                        skills_v <- append(skills_v, ability)
+                    if (input[[ability]] == TRUE) {
+                        skills_v <- append(skills_v, paste(ability, 'Saving Throws'))
                     }
                 }
                 
@@ -718,7 +756,19 @@ shinyServer(function(input, output, session) {
                 
                 skills_v <- paste(skills_v, collapse = ', ')
                 skills_v <- skills_v %>% str_remove_all(.,'(,)?[^,]* 0') %>% str_remove(.,'^,')
-                newXMLNode('skill', skills_v, parent=masterNode)
+                
+                newXMLNode('proficiency', skills_v, parent=masterNode)
+                
+                if (length(inserted > 0)) {
+                    for (i in length(inserted):1) {
+                        addChildren(masterNode, 
+                                    newXMLNode('trait',
+                                               newXMLNode('name',input[[paste0(inserted[i],'_name')]]), 
+                                               newXMLNode('text',input[[paste0(inserted[i],'_text')]])
+                                    )
+                        )
+                    }
+                }
                 
                 if (length(inserted_mod > 0)) {
                     
@@ -727,9 +777,12 @@ shinyServer(function(input, output, session) {
                                           paste(input[[paste0(mod,'_target')]], input[[paste0(mod,'_value')]]),
                                           parent=masterNode)
                         xmlAttrs(new) <- c('category' = input[[paste0(mod,'_category')]])
-                        
                     }
                 }
+                
+                
+                
+
             }
             
             # Clean output XML
