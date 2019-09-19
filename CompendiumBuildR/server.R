@@ -122,15 +122,22 @@ shinyServer(function(input, output, session) {
                                             '')
                         )),
                     fluidRow(
-                        column(4,radioButtons('magic',
-                                              'Magic Item',
-                                              choices = c('Yes'=1,'No'=''),
-                                              selected= '')),
-                        column(4, 
-                               radioButtons('stealth',
-                                            'Stealth Disadvantage',
-                                            choices = c('Yes' ='YES', 'No' = ''),
-                                            selected = '')),
+                        column(4,
+                               div('Magic Item', align='center'),
+                               div(
+                                   materialSwitch('magic',
+                                                  '',
+                                                  status = 'info'),
+                                   style='margin-left:40%;margin-top:10px;')
+                        ),
+                        column(4,
+                               div('Stealth Disadvantage', align='center'),
+                               div(
+                                   materialSwitch('stealth',
+                                                  '',
+                                                  status = 'info'),
+                                   style='margin-left:40%;margin-top:10px;')
+                        ),
                         column(4,
                                numericInput('strength',
                                             'Minimum Strength',
@@ -188,7 +195,8 @@ shinyServer(function(input, output, session) {
                                               multiple = TRUE))),
                     textAreaInput('text','
                                   Description',
-                                  '',width = '195%')
+                                  '',width = '195%'),
+                    modifierUI
                     
                 )
                 
@@ -318,6 +326,8 @@ shinyServer(function(input, output, session) {
                                                      'Remove Last', 
                                                      icon = icon('minus-circle'),  
                                                      style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), align='right')),
+                        br(),
+                        br(),
                         tags$div(id = 'traitsactions')
                     )
                     
@@ -391,6 +401,7 @@ shinyServer(function(input, output, session) {
                                                      icon = icon('minus-circle'),  
                                                      style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), 
                                         align='right')),
+                        br(),
                         tags$div(id = 'descriptionblocks')
                     )
                 )
@@ -467,8 +478,9 @@ shinyServer(function(input, output, session) {
                                                      icon = icon('minus-circle'),  
                                                      style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), 
                                         align='right')),
-                        tags$div(id = 'backgroundtraitsblocks')
-                    ),
+                        br(),
+                        tags$div(id = 'backgroundtraitsblocks')),
+                    br(),
                     renderUI(modifierUI)
                     
                 )
@@ -487,12 +499,12 @@ shinyServer(function(input, output, session) {
     
     inserted <<- c()
     
-    observe( {
+    observeEvent(input$insertBtn, {
         
         
         if (input$category == 'monster') {
             btn <- input$insertBtn
-            id <- paste0('addedblock',btn)
+            id <- paste0('traitsactionsblock',btn)
             insertUI(
                 selector = '#traitsactions',
                 ## wrap element in a div with id for ease of removal
@@ -521,7 +533,7 @@ shinyServer(function(input, output, session) {
         }
         else if (input$category == 'spell'){
             btn <- input$insertBtn
-            id <- paste0('addedblock',btn)
+            id <- paste0('descriptionblocks',btn)
             insertUI(
                 selector = '#descriptionblocks',
                 ## wrap element in a div with id for ease of removal
@@ -559,13 +571,15 @@ shinyServer(function(input, output, session) {
     })
     
     
+    
+    
     # Add Modifiers interface
     
     modifierUI <- list(
         wellPanel(
             fluidRow(
                 column(4,
-                       tags$h3('Modifiers')),
+                       tags$h4('Modifiers')),
                 column(8,
                        actionButton('insertModBtn', 
                                     'Add Section', 
@@ -575,6 +589,8 @@ shinyServer(function(input, output, session) {
                                     'Remove Last', 
                                     icon = icon('minus-circle'),  
                                     style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), align='right'),
+                br(),
+                br(),
                 br(),
                 tags$div(id = 'modifiers'))
             
@@ -649,12 +665,16 @@ shinyServer(function(input, output, session) {
                 
                 newXMLNode('type',input$type, parent=masterNode)
                 newXMLNode('detail',input$detail, parent=masterNode)
-                newXMLNode('magic',input$magic, parent=masterNode)
+                newXMLNode('magic',
+                           if (input$magic == TRUE) {
+                               'YES'   }, 
+                           parent=masterNode)
                 newXMLNode('weight',input$weight, parent=masterNode)
                 newXMLNode('text',input$text, parent=masterNode)
                 newXMLNode('ac',input$ac, parent=masterNode)
-                newXMLNode('strength',input$strength, parent=masterNode)
-                newXMLNode('stealth',input$stealth, parent=masterNode)
+                newXMLNode('strength', input$strength, parent=masterNode)
+                newXMLNode('stealth',if ( == TRUE) {
+                    'YES'   }input$stealth, parent=masterNode)
                 newXMLNode('dmg1',input$dmg1, parent=masterNode)
                 newXMLNode('dmg2',input$dmg2, parent=masterNode)
                 newXMLNode('dmgType',input$dmgType, parent=masterNode)
@@ -771,10 +791,10 @@ shinyServer(function(input, output, session) {
                 }
                 
                 if (length(inserted_mod > 0)) {
-                    
                     for (mod in inserted_mod) {
                         new <- newXMLNode('modifier',
-                                          paste(input[[paste0(mod,'_target')]], input[[paste0(mod,'_value')]]),
+                                          paste(input[[paste0(mod,'_target')]], 
+                                                input[[paste0(mod,'_value')]]),
                                           parent=masterNode)
                         xmlAttrs(new) <- c('category' = input[[paste0(mod,'_category')]])
                     }
@@ -782,7 +802,7 @@ shinyServer(function(input, output, session) {
                 
                 
                 
-
+                
             }
             
             # Clean output XML
@@ -819,6 +839,9 @@ shinyServer(function(input, output, session) {
                                 icon("shield-alt")
                             } else if (input$category == 'spell') {
                                 icon("magic")
+                            }
+                            else if (input$category == 'background') {
+                                icon("history")
                             }
                             else { icon("clipboard")})
             })
