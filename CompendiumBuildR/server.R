@@ -42,6 +42,11 @@ skills <- c('Acrobatics (Dex)',
 
 skills_simple <- str_remove(skills, ' \\(.*\\)')
 
+
+
+
+
+
 shinyServer(function(input, output, session) {
     
     # UI Resets
@@ -62,6 +67,7 @@ shinyServer(function(input, output, session) {
     observeEvent(c(input$category), {
         click('reset')
     })
+    
     
     # UI item type
     observe({
@@ -446,9 +452,8 @@ shinyServer(function(input, output, session) {
                                         fluidRow(ability_list),
                                         fluidRow(renderUI(HTML('')))))
                         
-                        
-                        
-                    )
+                    ),
+                    renderUI(modifierUI)
                 )
                 
             }
@@ -461,11 +466,11 @@ shinyServer(function(input, output, session) {
     }
     )
     
-    # Add supplementary blocks to XML
+    # Add supplementary description blocks to XML
     
     inserted <<- c()
     
-    observeEvent(input$insertBtn, {
+    observe( {
         
         
         if (input$category == 'monster') {
@@ -508,14 +513,77 @@ shinyServer(function(input, output, session) {
                               textInput('notUsedInput','',''),
                               textAreaInput(paste0(id,'_desc'),
                                             label = '',
-                                            height = '200px'),
-                              id = id)
-                )
+                                            height = '200px')),
+                    id = id)
             )
             
             inserted <<- c(id, inserted)
         }
         
+    })
+    
+    
+    # Add Modifiers interface
+    
+    modifierUI <- list(
+        wellPanel(
+            fluidRow(
+                column(4,
+                       tags$h3('Modifiers')),
+                column(8,
+                       actionButton('insertModBtn', 
+                                    'Add Section', 
+                                    icon = icon('plus-circle'), 
+                                    style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                       actionButton('removeModBtn', 
+                                    'Remove Last', 
+                                    icon = icon('minus-circle'),  
+                                    style="color: #000; background-color: #e47c7c; border-color: #c53d3d"), align='right'),
+                br(),
+                tags$div(id = 'modifiers'))
+            
+            
+        )
+    )
+    
+    inserted_mod <<- c()
+    
+    observeEvent(input$insertModBtn, {
+        
+        btn <- input$insertModBtn
+        id <- paste0('addedMod',btn)
+        insertUI(
+            selector = '#modifiers',
+            ui = tags$div(
+                wellPanel(style = 'border-color: #828088',
+                          fluidRow(
+                              column(3, textInput(paste0(id,'_category'),'category')),
+                              column(6, textInput(paste0(id,'_target'),'Target')),
+                              column(3, textInput(paste0(id,'_value'),'Value')))),
+                id = id)
+        )
+        
+        inserted_mod <<- c(id, inserted_mod)
+    }
+    
+    )
+    
+    
+    
+    observeEvent(input$removeBtn, {
+        removeUI(
+            ## pass in appropriate div id
+            selector = paste0('#', inserted[1])
+        )
+        inserted <<- inserted[-1]
+    })
+    
+    observeEvent(input$removeModBtn, {
+        removeUI(
+            ## pass in appropriate div id
+            selector = paste0('#', inserted_mod[1])
+        )
+        inserted_mod <<- inserted_mod[-1]
     })
     
     # # Text box add and delete for Spell descriptions
@@ -529,17 +597,13 @@ shinyServer(function(input, output, session) {
     # })
     
     
-    observeEvent(input$removeBtn, {
-        removeUI(
-            ## pass in appropriate div id
-            selector = paste0('#', inserted[1])
-        )
-        inserted <<- inserted[-1]
-    })
+   
     
     new <- reactive({
         input$insertBtn
         input$removeBtn
+        input$insertModBtn
+        input$removeModBtn
         if(input$category !='') {
             # PARSE STRING
             masterNode = newXMLNode(input$category)
@@ -655,6 +719,17 @@ shinyServer(function(input, output, session) {
                 skills_v <- paste(skills_v, collapse = ', ')
                 skills_v <- skills_v %>% str_remove_all(.,'(,)?[^,]* 0') %>% str_remove(.,'^,')
                 newXMLNode('skill', skills_v, parent=masterNode)
+                
+                if (length(inserted_mod > 0)) {
+                    
+                    for (mod in inserted_mod) {
+                        new <- newXMLNode('modifier',
+                                          paste(input[[paste0(mod,'_target')]], input[[paste0(mod,'_value')]]),
+                                          parent=masterNode)
+                        xmlAttrs(new) <- c('category' = input[[paste0(mod,'_category')]])
+                        
+                    }
+                }
             }
             
             # Clean output XML
