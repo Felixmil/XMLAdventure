@@ -3,11 +3,7 @@ library(shinyjs)
 library(XML)
 library(stringr)
 library(shinyWidgets)
-# library(clipr)
 library(rclipboard)
-
-layout <- "data/layout.xml"
-# layout <- "CompendiumBuildR/data/layout.xml"
 
 
 # Abilities
@@ -43,9 +39,32 @@ skills <- c('Acrobatics (Dex)',
 skills_simple <- str_remove(skills, ' \\(.*\\)')
 
 
+# Modifiers
 
+modifiers <- list()
 
+modifiers$category <- c('Skills','Saving Throws','Ability Modifiers','Ability Scores','Bonuses')
+modifiers$Skills <- skills_simple
+modifiers$SavingThrows <- c(paste(abilities,'Save'))
+modifiers$AbilityModifiers <- c(paste(abilities,'Modifier'))
+modifiers$AbilityScores <- c(paste(abilities,'Score'))
+modifiers$Bonuses <- c('Proficiency Bonus',
+                       'Weapon Attacks',
+                       'Weapon Damage',
+                       'Melee Damage',
+                       'Melee Attacks',
+                       'Ranged Attacks',
+                       'Ranged Damage',
+                       'Spell Attack',
+                       'Spell DC',
+                       'Hit Points',
+                       'Armor Class',
+                       'Saving Throws',
+                       'Initiative',
+                       'Speed',
+                       'Passive Wisdom')
 
+modifiers$values <- c(c(-100:-1),'+ Proficiency Bonus',paste0('+',c(1:100)))
 
 shinyServer(function(input, output, session) {
     
@@ -55,13 +74,24 @@ shinyServer(function(input, output, session) {
         reset('fields')
         updateSliderTextInput(session, 'cr',selected = 'NA')
         updateSliderTextInput(session, 'size', selected = 'NA')
+        
         for (i in length(inserted):1) {
             removeUI(
                 ## pass in appropriate div id
                 selector = paste0('#', inserted[i])
             )
+            
         }
+        
         inserted <<- c()
+        
+        for (i in length(insertedMod):1) {
+            removeUI(
+                ## pass in appropriate div id
+                selector = paste0('#', insertedMod[i])
+            )
+        }
+        insertedMod <<- c()
     })
     
     observeEvent(c(input$category), {
@@ -598,7 +628,7 @@ shinyServer(function(input, output, session) {
         )
     )
     
-    inserted_mod <<- c()
+    insertedMod <<- c()
     
     observeEvent(input$insertModBtn, {
         
@@ -609,16 +639,77 @@ shinyServer(function(input, output, session) {
             ui = tags$div(
                 wellPanel(style = 'border-color: #828088',
                           fluidRow(
-                              column(3, textInput(paste0(id,'_category'),'category')),
-                              column(6, textInput(paste0(id,'_target'),'Target')),
-                              column(3, textInput(paste0(id,'_value'),'Value')))),
+                              column(3, selectInput(paste0(id,'_category'),
+                                                    'category',
+                                                    choices = modifiers$category,
+                                                    selected='Skills')),
+                              # textInput('test','test',value= input[[paste0(id,'_category')]]),
+                              column(4, uiOutput(paste0(id,'_targetui'))
+                                     # selectInput(paste0(id,'_target'),
+                                     #                'Target',
+                                     #                choices = c(modifiers[['Skills']],''),
+                                     #                selected=''))
+                              ),
+                              column(5, selectInput(paste0(id,'_value'),
+                                                    'Value',
+                                                    modifiers$values,
+                                                    selected = '+ Proficiency Bonus'))
+                          )),
                 id = id)
         )
         
-        inserted_mod <<- c(id, inserted_mod)
+        insertedMod <<- c(id, insertedMod)
+        
+        
+        output[[paste0(id,'_targetui')]] <- renderUI({
+            selectInput(inputId = paste0(id,'_target'),
+                        '',
+                        choices= modifiers[[str_remove(input[[paste0(id,'_category')]],' ')]]
+            )
+        })
+        
+        
     }
     
     )
+    
+    
+    
+    # observeEvent(
+    #     c(input$addedMod1_category,
+    #       input$addedMod2_category,
+    #       input$addedMod3_category,
+    #       input$addedMod4_category,
+    #       input$addedMod5_category,
+    #       input$addedMod6_category,
+    #       input$addedMod7_category,
+    #       input$addedMod7_category,
+    #       input$addedMod8_category,
+    #       input$addedMod9_category,
+    #       input$addedMod10_category)
+    #     ,{
+    #         # for (idtest in insertedMod) {
+    #             # output[[paste0(idtest,'_targetui')]] <- renderUI({
+    #             #     selectInput(inputId = paste0(idtest,'_target'),
+    #             #                 '',
+    #             #                 choices= modifiers[[str_remove(input[[paste0(idtest,'_category')]],' ')]]
+    #             #     )
+    #             # })
+    #         #     
+    #         # }
+    #         
+    # 
+    # for (id in insertedMod) {
+    #     if(input[[paste0(id,'_target')]] == ''){
+    #         updateSelectInput(session,
+    #                           inputId = paste0(id,'_target'),
+    #                           choices= modifiers[[str_remove(input[[paste0(id,'_category')]],' ')]],
+    #                           selected = ''
+    #                               )
+    #     }
+    # }
+    #     }
+    # )
     
     
     
@@ -633,9 +724,9 @@ shinyServer(function(input, output, session) {
     observeEvent(input$removeModBtn, {
         removeUI(
             ## pass in appropriate div id
-            selector = paste0('#', inserted_mod[1])
+            selector = paste0('#', insertedMod[1])
         )
-        inserted_mod <<- inserted_mod[-1]
+        insertedMod <<- insertedMod[-1]
     })
     
     # # Text box add and delete for Spell descriptions
@@ -666,20 +757,31 @@ shinyServer(function(input, output, session) {
                 newXMLNode('type',input$type, parent=masterNode)
                 newXMLNode('detail',input$detail, parent=masterNode)
                 newXMLNode('magic',
-                           if (input$magic == TRUE) {
-                               'YES'   }, 
+                           if (input$magic == TRUE) {'YES'},
                            parent=masterNode)
                 newXMLNode('weight',input$weight, parent=masterNode)
                 newXMLNode('text',input$text, parent=masterNode)
                 newXMLNode('ac',input$ac, parent=masterNode)
                 newXMLNode('strength', input$strength, parent=masterNode)
-                newXMLNode('stealth',if ( == TRUE) {
-                    'YES'   }input$stealth, parent=masterNode)
+                newXMLNode('stealth',
+                           if(input$stealth == TRUE) {'YES'},
+                           parent=masterNode)
                 newXMLNode('dmg1',input$dmg1, parent=masterNode)
                 newXMLNode('dmg2',input$dmg2, parent=masterNode)
                 newXMLNode('dmgType',input$dmgType, parent=masterNode)
                 newXMLNode('property',paste(input$property,collapse=','), parent=masterNode)
                 newXMLNode('range', input$range, parent=masterNode)
+                
+                if (length(insertedMod > 0)) {
+                    for (mod in insertedMod) {
+                        new <- newXMLNode('modifier',
+                                          paste(input[[paste0(mod,'_target')]], 
+                                                input[[paste0(mod,'_value')]]),
+                                          parent=masterNode)
+                        xmlAttrs(new) <- c('category' = input[[paste0(mod,'_category')]])
+                    }
+                }
+                
                 
             } else if (input$category == 'monster') {
                 
@@ -790,8 +892,8 @@ shinyServer(function(input, output, session) {
                     }
                 }
                 
-                if (length(inserted_mod > 0)) {
-                    for (mod in inserted_mod) {
+                if (length(insertedMod > 0)) {
+                    for (mod in insertedMod) {
                         new <- newXMLNode('modifier',
                                           paste(input[[paste0(mod,'_target')]], 
                                                 input[[paste0(mod,'_value')]]),
