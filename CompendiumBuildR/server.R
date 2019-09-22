@@ -4,6 +4,7 @@ library(XML)
 library(stringr)
 library(shinyWidgets)
 library(rclipboard)
+library(tools)
 
 
 # Abilities
@@ -750,7 +751,7 @@ shinyServer(function(input, output, session) {
         if(input$category !='') {
             # PARSE STRING
             masterNode = newXMLNode(input$category)
-            newXMLNode('name',input$name, parent=masterNode)
+            newXMLNode('name',toTitleCase(input$name), parent=masterNode)
             
             if (input$category == 'item') {
                 
@@ -786,7 +787,7 @@ shinyServer(function(input, output, session) {
             } else if (input$category == 'monster') {
                 
                 newXMLNode('size', input$size, parent=masterNode)
-                newXMLNode('type', input$type, parent=masterNode)
+                newXMLNode('type', tolower(input$type), parent=masterNode)
                 newXMLNode('speed', input$speed, parent=masterNode)
                 newXMLNode('ac', input$ac, parent=masterNode)
                 newXMLNode('cr', input$cr, parent=masterNode)
