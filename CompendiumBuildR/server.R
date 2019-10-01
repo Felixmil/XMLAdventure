@@ -44,12 +44,12 @@ skills_simple <- str_remove(skills, ' \\(.*\\)')
 
 modifiers <- list()
 
-modifiers$category <- c('Skills','Saving Throws','Ability Modifiers','Ability Scores','Bonuses')
+modifiers$category <- c('Skills','Saving Throws','Ability Modifiers','Ability Scores','Bonus')
 modifiers$Skills <- skills_simple
 modifiers$SavingThrows <- c(paste(abilities,'Save'))
 modifiers$AbilityModifiers <- c(paste(abilities,'Modifier'))
 modifiers$AbilityScores <- c(paste(abilities,'Score'))
-modifiers$Bonuses <- c('Proficiency Bonus',
+modifiers$Bonus <- c('Proficiency Bonus',
                        'Weapon Attacks',
                        'Weapon Damage',
                        'Melee Damage',
@@ -756,7 +756,7 @@ shinyServer(function(input, output, session) {
             if (input$category == 'item') {
                 
                 newXMLNode('type',input$type, parent=masterNode)
-                newXMLNode('detail',input$detail, parent=masterNode)
+                newXMLNode('detail',tolower(input$detail), parent=masterNode)
                 newXMLNode('magic',
                            if (input$magic == TRUE) {'YES'},
                            parent=masterNode)
