@@ -30,6 +30,8 @@ shinyUI(fluidPage(theme = shinytheme("superhero"),
                    uiOutput('fields'))
         ),
         column(4,
+               fluidRow(textInput('source','Source:','')),
+               hr(),
                fluidRow(
                    column(6,actionButton('reset','Reset', icon = icon('refresh'))),
                    column(6, uiOutput('copyButtonElement')),

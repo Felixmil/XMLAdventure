@@ -752,6 +752,7 @@ shinyServer(function(input, output, session) {
             # PARSE STRING
             masterNode = newXMLNode(input$category)
             newXMLNode('name',toTitleCase(input$name), parent=masterNode)
+            newXMLNode('text',input$source, parent=masterNode)
             
             if (input$category == 'item') {
                 
